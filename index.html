@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Network Visualization</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	</head>
+	<body ontouchstart="">
+		<link href="css/main.css" rel="stylesheet" />
+		<link id="theme" href="css/dark.css" rel="stylesheet" />
+		
+		<script src="js/libs/decimalAdjustment.js"></script>
+	
+		<script src="js/libs/three.js"></script>
+
+		<script src="js/controls/TransformControls.js"></script>
+		<script src="js/libs/three.meshline.js"></script>
+		<script src="js/libs/three.texttexture.js"></script>
+		<script src="js/libs/three.textsprite.js"></script>
+		<script src="js/libs/Tween.js"></script>
+		<script src="js/libs/signals.min.js"></script>
+		<script src="js/libs/ui.js"></script>
+		<script src="js/libs/ui.three.js"></script>
+
+		<script src="js/libs/d3.min.js"></script>
+		<script src="js/Config.js"></script>
+		<script src="js/Command.js"></script>
+		<script src="js/commands/SetPositionCommand.js"></script>
+		<script src="js/Editor.js"></script>
+		<script src="js/History.js"></script>
+		<script src="js/Menubar.js"></script>
+		<script src="js/Menubar.File.js"></script>
+		<script src="js/Menubar.Help.js"></script>
+		<script src="js/Sidebar.js"></script>
+		<script src="js/Sidebar.Properties.js"></script>
+		<script src="js/Sidebar.Properties.NodeNotEditable.js"></script>
+		<script src="js/Sidebar.Properties.EdgeNotEditable.js"></script>
+		<script src="js/Sidebar.Properties.NodeEditable.js"></script>
+		<script src="js/Sidebar.Properties.EdgeEditable.js"></script>
+		<script src="js/Sidebar.Settings.js"></script>
+
+		<script src="js/Toolbar.js"></script>
+		<script src="js/NetworkVisualization.js"></script>
+		<script src="js/Viewport.js"></script>
+		<script src="js/Graph.js"></script>
+
+
+		<script>
+
+			window.URL = window.URL || window.webkitURL;
+			window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
+
+			const IS_MAC = navigator.platform.toUpperCase().indexOf( 'MAC' ) >= 0;
+
+			Number.prototype.format = function (){
+				return this.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+			};
+
+			var loader = new THREE.FontLoader();
+
+			var textureloader = new THREE.TextureLoader();
+			loader.load( 'fonts/helvetiker_regular.typeface.json', function ( font ) {
+
+				textureloader.load( 'image/disc.png', function( texture ) {
+
+					var editor = new Editor();
+
+					var viewport = new Viewport( editor );
+					document.body.appendChild( viewport.container.dom );
+
+					var menubar = new Menubar( editor );
+					document.body.appendChild( menubar.dom );
+
+					var sidebar = new Sidebar( editor );
+					document.body.appendChild( sidebar.dom );
+
+
+					var toolbar = new Toolbar( editor );
+					document.body.appendChild( toolbar.dom );
+		
+					var networkVisualization = new NetworkVisualization( editor, font, texture, viewport );
+					document.addEventListener( 'keydown', function ( event ) {
+
+						switch ( event.keyCode ) {
+
+
+						}
+
+						}, false );
+
+					function onWindowResize( event ) {
+
+					editor.signals.windowResize.dispatch();
+
+					}
+
+					window.addEventListener( 'resize', onWindowResize, false );
+
+					onWindowResize();
+
+					} );
+
+				} );
+
+			
+
+
+
+	
+
+
+
+		</script>
+	</body>
+</html>
