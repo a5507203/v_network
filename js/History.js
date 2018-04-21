@@ -80,7 +80,7 @@ History.prototype = {
 		// clearing all the redo-commands
 
 		this.redos = [];
-		//this.editor.signals.historyChanged.dispatch( cmd );
+		this.editor.signals.historyChanged.dispatch( cmd );
 
 	},
 
@@ -246,7 +246,7 @@ History.prototype = {
 
 		}
 
-		this.editor.signals.sceneGraphChanged.active = false;
+		this.editor.signals.rendererChanged.active = false;
 		this.editor.signals.historyChanged.active = false;
 
 		var cmd = this.undos.length > 0 ? this.undos[ this.undos.length - 1 ] : undefined;	// next cmd to pop
@@ -274,26 +274,20 @@ History.prototype = {
 
 		}
 
-		this.editor.signals.sceneGraphChanged.active = true;
+		this.editor.signals.rendererChanged.active = true;
 		this.editor.signals.historyChanged.active = true;
 
-		this.editor.signals.sceneGraphChanged.dispatch();
+		this.editor.signals.rendererChanged.dispatch();
 		this.editor.signals.historyChanged.dispatch( cmd );
 
 	},
 
 	enableSerialization: function ( id ) {
 
-		/**
-		 * because there might be commands in this.undos and this.redos
-		 * which have not been serialized with .toJSON() we go back
-		 * to the oldest command and redo one command after the other
-		 * while also calling .toJSON() on them.
-		 */
 
 		this.goToState( - 1 );
 
-		this.editor.signals.sceneGraphChanged.active = false;
+		this.editor.signals.rendererChanged.active = false;
 		this.editor.signals.historyChanged.active = false;
 
 		var cmd = this.redo();
@@ -308,7 +302,7 @@ History.prototype = {
 
 		}
 
-		this.editor.signals.sceneGraphChanged.active = true;
+		this.editor.signals.rendererChanged.active = true;
 		this.editor.signals.historyChanged.active = true;
 
 		this.goToState( id );

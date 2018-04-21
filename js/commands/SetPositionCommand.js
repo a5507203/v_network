@@ -1,16 +1,4 @@
 
-/**
- * @author dforrer / https://github.com/dforrer
- * Developed as part of a project at University of Applied Sciences and Arts Northwestern Switzerland (www.fhnw.ch)
- */
-
-/**
- * @param object THREE.Object3D
- * @param newPosition THREE.Vector3
- * @param optionalOldPosition THREE.Vector3
- * @constructor
- */
-
 var SetPositionCommand = function ( object, newPosition, networkPosition, optionalOldPosition ) {
 
 	Command.call( this );
@@ -20,8 +8,10 @@ var SetPositionCommand = function ( object, newPosition, networkPosition, option
 	this.updatable = true;
 
     this.object = object;
-    object.graphElement.orginalCoordinate.copy(networkPosition)
-    console.log(networkPosition);
+    object.graphElement.orginalCoordinate.copy(networkPosition);
+	 
+	 
+    object.graphElement.coordinate.set(newPosition.x,newPosition.y);
 
 	if ( object !== undefined && newPosition !== undefined ) {
 
@@ -37,6 +27,7 @@ var SetPositionCommand = function ( object, newPosition, networkPosition, option
 	}
 
 };
+
 SetPositionCommand.prototype = {
 
 	execute: function () {

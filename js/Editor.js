@@ -31,13 +31,16 @@ var Editor = function ( ) {
 		geometryChanged: new Signal(),
 		animationChanged: new Signal(),
 		objectSelected: new Signal(),
-
 		objectAdded: new Signal(),
+		addNewNode: new Signal(),
 		objectRemoved: new Signal(),
 		objectChanged: new Signal(),
 		modeChanged: new Signal(),
+		searchEdges: new Signal(),
+		nodePositionChanging: new Signal(),
+		historyChanged: new Signal(),
 		refreshSidebarObjectProperties: new Signal()
-
+	
 	
 
 	};
@@ -55,6 +58,22 @@ var Editor = function ( ) {
 	this.object = {};
 	this.helpers = {};
 	this.selected = null;
+	this.graph = new Graph();
+	this.nodesContainer = new THREE.Group();
+    this.nodesContainer.position.set( 0, 0, 0.04 );
+    this.scene.add( this.nodesContainer );
+
+    this.edgesContainer = new THREE.Group();
+    this.edgesContainer.position.set( 0, 0, 0.01 );
+    this.scene.add( this.edgesContainer );
+
+    this.flowsContainer = new THREE.Group();
+    this.flowsContainer.position.set( 0, 0, 0.02 );
+    this.scene.add( this.flowsContainer );
+
+    this.tripsContainer = new THREE.Group();
+    this.tripsContainer.position.set( 0, 0, 0.02 );
+    this.scene.add( this.tripsContainer );
 
 };
 
@@ -70,8 +89,6 @@ Editor.prototype = {
 			if ( child.geometry !== undefined ) scope.addGeometry( child.geometry );
 			if ( child.material !== undefined ) scope.addMaterial( child.material );
 
-		
-
 		} );
 
 		this.scene.add( object );
@@ -81,7 +98,17 @@ Editor.prototype = {
 	},
 
 
+	addNode: function ( node ) {
 
+
+		console.log(node);
+		this.nodesContainer.add( node );
+		this.graph.addNode( node.graphElement );
+		Config.newNodeCount += 1;
+		this.signals.objectAdded.dispatch( node );
+		this.signals.rendererChanged.dispatch();
+
+	},
 
 
 
@@ -130,7 +157,24 @@ Editor.prototype = {
 
 	},
 
+	removeNode: function ( node ) {
 
+	
+		var scope = this;
+
+		// object.traverse( function ( child ) {
+
+		// 	scope.removeHelper( child );
+
+		// } );
+
+		node.parent.remove( node );
+		this.graph.removeNode( node.graphElement.id );
+
+		this.signals.objectRemoved.dispatch( node );
+		this.signals.rendererChanged.dispatch( );
+
+	},
 
 
 

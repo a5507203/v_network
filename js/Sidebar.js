@@ -15,20 +15,21 @@ var Sidebar = function ( editor ) {
 	container.add( tabs );
 
 	var animationMode = new UI.Span().add(
-		new Sidebar.Properties( editor ),
-		
+		new Sidebar.Properties( editor )
 	);
 	container.add( animationMode );
 
 
 	var editMode = new UI.Span().add(
-		new Sidebar.Properties( editor ),
+		new Sidebar.History( editor ),
+		new Sidebar.AddElements( editor ),
+		new Sidebar.Properties( editor )
 	);
 	container.add( editMode );
 
 
 	var settings = new UI.Span().add(
-		new Sidebar.Settings( editor ),
+		new Sidebar.Settings( editor )
 
 	);
 	container.add( settings );

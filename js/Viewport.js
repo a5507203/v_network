@@ -65,24 +65,22 @@ var Viewport = function ( editor ) {
 
 
 	transformControls.addEventListener( 'change', function () {
-		//console.log('changed');
 		var object = transformControls.object;
 
 		if ( object !== undefined ) {
 
-			 selectionBox.setFromObject( object );
-
+			selectionBox.setFromObject( object );
 			// if ( editor.helpers[ object.id ] !== undefined ) {
 
 			// 	editor.helpers[ object.id ].update();
 
 			// }
-
+			signals.nodePositionChanging.dispatch(object);
 			signals.refreshSidebarObjectProperties.dispatch( object );
 
 		}
 
-		render();
+		//render();
 
 	} );
 
@@ -97,13 +95,13 @@ var Viewport = function ( editor ) {
 	} );
 
 	transformControls.addEventListener( 'mouseUp', function () {
-		console.log('changed');
+
 		var object = transformControls.object;
 
 		if ( object !== undefined ) {
 	
 			if ( ! objectPositionOnDown.equals( object.position ) ) {
-				console.log('changed');
+			
 				editor.execute( new SetPositionCommand( object, object.position, new THREE.Vector2(convertCoordinate(object.position.x),convertCoordinate(object.position.y)) ,objectPositionOnDown ) );
 
 			}
@@ -267,7 +265,10 @@ var Viewport = function ( editor ) {
 
 
 
+	// signals.attachTransform.add(function(object){
+	// 	transformControls.attach( object );
 
+	// });
 
 	signals.objectSelected.add( function ( object ) {
 
@@ -293,7 +294,9 @@ var Viewport = function ( editor ) {
 				//object.material
 
 			}
-			//if (object.type != 0 )
+
+			//TODO if (object.type != 0 && editor.mode != "AnimationMode" )
+			if (editor.mode != "AnimationMode" && object.name != 'edge')
 				transformControls.attach( object );
 
 		}
@@ -307,11 +310,11 @@ var Viewport = function ( editor ) {
 
 	signals.objectAdded.add( function ( object ) {
 
-		object.traverse( function ( child ) {
+	
 
-			objects.push( child );
+		objects.push( object );
 
-		} );
+	
 
 	} );
 
@@ -383,7 +386,7 @@ var Viewport = function ( editor ) {
 	} );
 
 	signals.showGridChanged.add( function ( showGrid ) {
-		console.log(showGrid)
+		console.log(showGrid);
 		grid.visible = showGrid;
 		render();
 

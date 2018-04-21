@@ -4,17 +4,17 @@ Sidebar.Properties = function ( editor ) {
 
 	var container = new UI.Panel();
 	container.setDisplay( 'none' );
-	var propertiesRow = new UI.Row();
+	//var propertiesRow = new UI.Row();
 
-	propertiesRow.dom.style['text-align'] = 'center';
+	//propertiesRow.dom.style['text-align'] = 'center';
 
-	container.add( propertiesRow );
+	//container.add( propertiesRow );
 
 
-	propertiesRow.add( new UI.Text( 'Properties' ).setTextTransform( 'uppercase' ) );
-	container.add( new UI.Break() );
-	container.add( new UI.Break() );
+	container.add( new UI.Text( 'Properties' ).setTextTransform( 'uppercase' ) );
+	
 
+	container.add( new UI.Break(), new UI.Break() );
 
 
 	var objectTypeRow = new UI.Row();
@@ -31,7 +31,7 @@ Sidebar.Properties = function ( editor ) {
 
 
 	signals.objectSelected.add(function(object){
-		console.log(object)
+		//console.log(object)
 
 		if(!object) {
 
@@ -47,16 +47,37 @@ Sidebar.Properties = function ( editor ) {
 
 
 	});
-	
+
+
+	signals.modeChanged.add(function( ){
+		object = editor.selected;
+	if(!object) {
+
+		container.setDisplay( 'none' );
+	}
+	else{
+
+		container.setDisplay( '' );
+
+		updateUI(object);
+	}
+
+
+
+	});
+
 	function updateUI( object ) {
 
 
 		objectType.setValue(object.name);
 		parameters.clear();
 		console.log(editor.mode);
+		var editable = 'NotEditable';
+		if(editor.mode != 'AnimationMode'){
 		// console.log( object.name+editor.mode)
-		var editable = 'Editable';
-		if (object.type == 1 ) editable = 'Editable'
+	
+		if (object.type == 0 ) editable = 'Editable';
+	}
 		parameters.add( new Sidebar.Properties[ object.name+editable ]( editor, object ) );
 		
 

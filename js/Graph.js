@@ -1,14 +1,16 @@
 var Node = function (id ) {
     this.id = id;
-    this.coordinate = { }
-    this.orginalCoordinate = { }
+    this.coordinate = { };
+    this.orginalCoordinate = { };
     this.edges = { };
     this.flows = { }; 
     this.trips = { };
+    this.outgoingEdges = [];
+    this.incomingEdges = [];
 }
 
 var Edge = function( lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type ) {
-    this.lineWidth = lineWidth
+    this.lineWidth = lineWidth;
     this.capacity = capacity;
     this.length = length; 
     this.freeFlowTime = freeFlowTime; 
@@ -21,7 +23,7 @@ var Edge = function( lineWidth, capacity, length, freeFlowTime, b, power, speedL
 }
 
 var Flow = function( lineColor, volume, cost ) {
-    this.lineColor = lineColor
+    this.lineColor = lineColor;
     this.volume = volume;
     this.cost = cost;
 } 
@@ -41,13 +43,27 @@ var Graph = function Graph() {
   Graph.prototype = {
       
     
-    addNode : function ( id ) {
+    createAndAddNode : function ( id ) {
 
         if ( this.nodes[id] ) return;
         this.nodes[id] = new Node(id);
+        return this.nodes[id];
         
     },
 
+    createNode: function( id, coordinate, orginalCoordinate ){
+        if ( this.nodes[id] ) return;
+        var newNode = new Node(id);
+        newNode.coordinate = coordinate;
+        newNode.orginalCoordinate = orginalCoordinate;
+        return newNode;
+
+    },
+
+    addNode: function( node ){
+        this.nodes[node.id] = node;        
+
+    },
 
     setNodeCoordinate : function ( id, coordinate ) {
 

@@ -1535,11 +1535,12 @@
 
 					throw new Error( msg );
 
-				} else {
+				} 
+				// else {
 
-					console.warn( msg );
+				// 	console.warn( msg );
 
-				}
+				// }
 
 				return this.identity();
 
@@ -3425,11 +3426,12 @@
 
 					throw new Error( msg );
 
-				} else {
+				} 
+				// else {
 
-					console.warn( msg );
+				// 	console.warn( msg );
 
-				}
+				// }
 
 				return this.identity();
 

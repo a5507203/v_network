@@ -25,13 +25,17 @@
 		<script src="js/libs/d3.min.js"></script>
 		<script src="js/Config.js"></script>
 		<script src="js/Command.js"></script>
+		<script src="js/commands/addNodeCommand.js"></script>
 		<script src="js/commands/SetPositionCommand.js"></script>
+		
 		<script src="js/Editor.js"></script>
 		<script src="js/History.js"></script>
 		<script src="js/Menubar.js"></script>
 		<script src="js/Menubar.File.js"></script>
 		<script src="js/Menubar.Help.js"></script>
 		<script src="js/Sidebar.js"></script>
+		<script src="js/Sidebar.AddElements.js"></script>
+		<script src="js/Siderbar.History.js"></script>
 		<script src="js/Sidebar.Properties.js"></script>
 		<script src="js/Sidebar.Properties.NodeNotEditable.js"></script>
 		<script src="js/Sidebar.Properties.EdgeNotEditable.js"></script>
@@ -77,8 +81,8 @@
 
 					var toolbar = new Toolbar( editor );
 					document.body.appendChild( toolbar.dom );
-		
-					var networkVisualization = new NetworkVisualization( editor, font, texture, viewport );
+					Config.nodeTexture = texture;
+					var networkVisualization = new NetworkVisualization( editor, font, viewport );
 					document.addEventListener( 'keydown', function ( event ) {
 
 						switch ( event.keyCode ) {
@@ -102,13 +106,38 @@
 
 				} );
 
+
+
+			document.addEventListener( 'keydown', function ( event ) {
+
+			switch ( event.key.toLowerCase() ) {
+				case 'delete':
+
+					// var object = editor.selected;
+
+					// if ( object === null ) return;
+					
+					// var parent = object.parent;
+					// if ( parent !== null ) editor.execute( new RemoveObjectCommand( object ) );
+
+					break;
+
 			
+				case 'z':
 
+					if ( IS_MAC ? event.metaKey : event.ctrlKey ) {
 
+						event.preventDefault(); // Prevent browser specific hotkeys
+						if ( event.shiftKey ) {
+							editor.redo();
+						} else {
+							editor.undo();
+						}
+					}
+					break;
+			}
 
-	
-
-
+			}, false );
 
 		</script>
 	</body>
