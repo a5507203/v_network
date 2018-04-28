@@ -1,28 +1,28 @@
 
-var AddNodeCommand = function ( object ) {
+var AddEdgeCommand = function ( object ) {
 
 	Command.call( this );
 	this.type = 'AddObjectCommand';
 
 	this.object = object;
 	if ( object !== undefined ) {
-		this.name = 'Add New Node';
+		this.name = 'Add New Edge';
 	}
 
 };
 
-AddNodeCommand.prototype = {
+AddEdgeCommand.prototype = {
 
 	execute: function ( ) {
-		console.log(this.object)
-		this.editor.addNode( this.object );
+		console.log('n')
+		this.editor.addEdge( this.object );
 		this.editor.select( this.object );
 	
 	},
 
 	undo: function () {
 
-		this.editor.removeNode( this.object );
+		this.editor.removeEdge( this.object );
 		this.editor.deselect();
 
 	},

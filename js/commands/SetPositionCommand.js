@@ -1,23 +1,20 @@
 
-var SetPositionCommand = function ( object, newPosition, networkPosition, optionalOldPosition ) {
+var SetPositionCommand = function ( object, newPosition, optionalOldPosition ) {
 
 	Command.call( this );
 
 	this.type = 'SetPositionCommand';
-	this.name = 'Set Position';
+	this.name = 'Set Node '+object.graphElement.id+' Position';
 	this.updatable = true;
 
     this.object = object;
-    object.graphElement.orginalCoordinate.copy(networkPosition);
-	 
-	 
-    object.graphElement.coordinate.set(newPosition.x,newPosition.y);
+
 
 	if ( object !== undefined && newPosition !== undefined ) {
 
 		this.oldPosition = object.position.clone();
 		this.newPosition = newPosition.clone();
-
+	
 	}
 
 	if ( optionalOldPosition !== undefined ) {
@@ -25,6 +22,11 @@ var SetPositionCommand = function ( object, newPosition, networkPosition, option
 		this.oldPosition = optionalOldPosition.clone();
 
 	}
+	this.newNetworkPosition = new THREE.Vector2(convertCoordinate(this.newPosition.x),convertCoordinate(this.newPosition.y));
+	this.oldNetworkPosition = new THREE.Vector2(convertCoordinate(this.oldPosition.x),convertCoordinate(this.oldPosition.y));
+	
+
+	
 
 };
 
@@ -33,7 +35,12 @@ SetPositionCommand.prototype = {
 	execute: function () {
 
 		this.object.position.copy( this.newPosition );
+	//	this.editor.signals.updateEdges.dispatch(this.object);
+		this.object.graphElement.orginalCoordinate.copy(this.newNetworkPosition);
+    	this.object.graphElement.coordinate.set(this.newPosition.x,this.newPosition.y);
+		console.log(this.newPosition.x,this.newPosition.y);
 		this.object.updateMatrixWorld( true );
+		this.editor.signals.nodePositionChanging.dispatch( this.object );
 		this.editor.signals.objectChanged.dispatch( this.object );
 
 	},
@@ -41,8 +48,14 @@ SetPositionCommand.prototype = {
 	undo: function () {
 
 		this.object.position.copy( this.oldPosition );
+	//	this.editor.signals.updateEdges.dispatch(this.object);
+	console.log("undo set position");
+		this.object.graphElement.orginalCoordinate.copy(this.oldNetworkPosition);
+    	this.object.graphElement.coordinate.set(this.oldPosition.x,this.oldPosition.y);
 		this.object.updateMatrixWorld( true );
+		this.editor.signals.nodePositionChanging.dispatch(this.object);
 		this.editor.signals.objectChanged.dispatch( this.object );
+		this.editor.select( this.object );
 
 	},
 

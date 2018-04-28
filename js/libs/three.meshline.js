@@ -43,6 +43,7 @@
                 this.counters.push(c);
                 this.counters.push(c);
             }
+          //  console.log('position chaangd');
         }
     
         if( g instanceof THREE.BufferGeometry ) {

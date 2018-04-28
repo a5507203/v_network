@@ -4,13 +4,12 @@ Sidebar.AddElements = function ( editor ) {
 
 	var container = new UI.Panel();
 	var signals = editor.signals;
-
-	//propertiesRow.dom.style['text-align'] = 'center';
-	// title 
+	//title
+	
 	container.add( new UI.Text( 'Add Elements' ).setTextTransform( 'uppercase' ) );
-	container.add( new UI.Break(), new UI.Break() );
+	container.add( new UI.Break());
 	var addNodeRow = new UI.Row();
-	var addNodeButton = new UI.Button( 'Add New Node' );
+	var addNodeButton = new UI.Button( 'Add Node' );
 	addNodeButton.onClick( function () {
 
 		signals.addNewNode.dispatch();
@@ -20,14 +19,19 @@ Sidebar.AddElements = function ( editor ) {
 	container.add( addNodeRow );
 
 	var addEdgeRow = new UI.Row();
-	var addEdgeButton = new UI.Button( 'Add New Edge' );
+	var addEdgeButton = new UI.Button( 'Add Link' );
 	addEdgeButton.onClick( function () {
+		addEdgeButton.dom.classList.add( 'selected' );
+		signals.addNewEdgeStart.dispatch();
  
 	} );
+	signals.objectAdded.add(function(object) {
+		if (object.name == 'edge')
+			addEdgeButton.dom.classList.remove( 'selected' );
+	});
 	addEdgeRow.add( addEdgeButton );
 	container.add( addEdgeRow );
 
-	//propertiesRow.add( new UI.Text( 'Properties' ).setTextTransform( 'uppercase' ) );
 
 	return container;
 

@@ -61,7 +61,8 @@ var Graph = function Graph() {
     },
 
     addNode: function( node ){
-        this.nodes[node.id] = node;        
+        this.nodes[node.id] = node; 
+        console.log(this.nodes);       
 
     },
 
@@ -98,11 +99,23 @@ var Graph = function Graph() {
 
     },
    // "Init node ", "Term node ", "Capacity ", "Length ", "Free Flow Time ", "B", "Power", "Speed limit ", "Toll ", "Type"
-    addEdge : function ( start, end, lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type ) {
+    createAndAddEdge : function ( start, end, lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type ) {
 
         if ( !this.nodes[start] || !this.nodes[end] || this.nodes[start].edges[end] ) return;
         this.nodes[start].edges[end] = new Edge( lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type );
 
+    },
+
+    createEdge : function ( start, end, lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type ) {
+
+        if ( !this.nodes[start] || !this.nodes[end] || this.nodes[start].edges[end] ) return;
+        return new Edge( lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type );
+
+    },
+
+    addEdge : function ( start, end, edge ) {
+        if ( !this.nodes[start] || !this.nodes[end] || this.nodes[start].edges[end] ) return;
+        this.nodes[start].edges[end] = edge;
     },
 
     getEdge : function ( start, end  ) {

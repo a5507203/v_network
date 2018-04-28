@@ -3,8 +3,7 @@ Sidebar.Properties.edgeEditable = function ( editor, object ) {
 	var signals = editor.signals;
 	var container = new UI.Row();
     var graphElement = object.graphElement;
-  
-  
+
     // b
     // freeFlowTime
     //   toll

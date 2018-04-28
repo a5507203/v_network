@@ -11,20 +11,20 @@ var Toolbar = function ( editor ) {
 
 	// showEdges / showFlows / scale
 
-	var showEdges = new UI.Button( 'Show Edges' );
+	var showEdges = new UI.Button( 'Network' );
 	showEdges.dom.classList.add( 'selected' );
 	showEdges.onClick( function () {
        updateGraphElementDisplay( 0 );
 	} );
 	buttons.add( showEdges );
 
-	var showFlows = new UI.Button( 'Show Flows' );
+	var showFlows = new UI.Button( 'Traffic Flow' );
 	showFlows.onClick( function () {
         updateGraphElementDisplay( 1 );
 	} );
 	buttons.add( showFlows );
 
-	var showTrips = new UI.Button( 'Show Trips' );
+	var showTrips = new UI.Button( 'Desire Lines' );
 	showTrips.onClick( function () {
         updateGraphElementDisplay( 2 );
 	} );
@@ -40,7 +40,7 @@ var Toolbar = function ( editor ) {
 		else if( type == 2 ) {
 			currButton = showTrips;
 		}
-		console.log(currButton.dom.classList)
+		console.log(currButton.dom.classList);
 		if (currButton.dom.classList.contains('selected')) {
 			currButton.dom.classList.remove( 'selected' );
 			signals.networkElementDisplayChanged.dispatch( type, false );

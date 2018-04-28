@@ -50,17 +50,18 @@ Sidebar.Properties = function ( editor ) {
 
 
 	signals.modeChanged.add(function( ){
-		object = editor.selected;
-	if(!object) {
+		//object = editor.selected;
+		editor.deselect();
+		// if(!object) {
 
-		container.setDisplay( 'none' );
-	}
-	else{
+			container.setDisplay( 'none' );
+		// }
+		//else{
 
-		container.setDisplay( '' );
+			// container.setDisplay( '' );
 
-		updateUI(object);
-	}
+			// updateUI(object);
+		//}
 
 
 
@@ -71,7 +72,7 @@ Sidebar.Properties = function ( editor ) {
 
 		objectType.setValue(object.name);
 		parameters.clear();
-		console.log(editor.mode);
+
 		var editable = 'NotEditable';
 		if(editor.mode != 'AnimationMode'){
 		// console.log( object.name+editor.mode)

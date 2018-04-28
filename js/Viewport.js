@@ -3,7 +3,7 @@ var Viewport = function ( editor ) {
 	var signals = editor.signals;
 	var animationLoopId;
 	var preCamera;
-	var animationCamera = undefined;
+	//var animationCamera = undefined;
  	var container  = this.container = new UI.Panel();
 	container.setId( 'viewport' );
 	container.setPosition( 'absolute' );
@@ -11,7 +11,7 @@ var Viewport = function ( editor ) {
 	///container.add( new Viewport.Info( editor ) );
 
 	//
-
+	var nodePairs = [];
 	var renderer = new THREE.WebGLRenderer();
 	renderer.autoClear = false;
 	renderer.autoUpdateScene = false;
@@ -27,7 +27,7 @@ var Viewport = function ( editor ) {
 
 	// helpers
 
-	var grid = new THREE.GridHelper( 100, 50, 0x444444, 0x888888 );
+	var grid = new THREE.GridHelper( 500, 250, 0x444444, 0x888888 );
 
 
 	grid.rotateX( Math.PI / 2 );
@@ -40,8 +40,8 @@ var Viewport = function ( editor ) {
 	// for ( var i = 0; i < array.length; i += 60 ) {
 	// 	//console.log(array[i])
 	// 	for ( var j = 0; j < 12; j ++ ) {
-	// 		console.log(array[ i + j ])
-	// 		//array[ i + j ] = 0.26;
+	// 		//console.log(array[ i + j ])
+	// 		array[ i + j ] = 0.26;
 
 	// 	}
 
@@ -90,7 +90,7 @@ var Viewport = function ( editor ) {
 
 		objectPositionOnDown = object.position.clone();
 
-		//controls.enabled = false;
+		controls.enabled = false;
 
 	} );
 
@@ -102,12 +102,12 @@ var Viewport = function ( editor ) {
 	
 			if ( ! objectPositionOnDown.equals( object.position ) ) {
 			
-				editor.execute( new SetPositionCommand( object, object.position, new THREE.Vector2(convertCoordinate(object.position.x),convertCoordinate(object.position.y)) ,objectPositionOnDown ) );
+				editor.execute( new SetPositionCommand( object, object.position,objectPositionOnDown ) );
 
 			}
 		}
 
-		//controls.enabled = true;
+		controls.enabled = true;
 
 	} );
 	sceneHelpers.add( transformControls );
@@ -225,15 +225,12 @@ var Viewport = function ( editor ) {
 
 		var array = getMousePosition( container.dom, event.clientX, event.clientY );
 		onDoubleClickPosition.fromArray( array );
-		console.log(ondblclick);
 
 		var intersects = getIntersects( onDoubleClickPosition, objects );
 
 		if ( intersects.length > 0 ) {
 
 			var intersect = intersects[ 0 ];
-
-		//	signals.objectFocused.dispatch( intersect.object );
 
 		}
 
@@ -246,6 +243,13 @@ var Viewport = function ( editor ) {
 	// controls need to be added *after* main logic,
 	// otherwise controls.enabled doesn't work.
 
+	var controls = new THREE.EditorControls( camera, container.dom );
+	controls.addEventListener( 'change', function () {
+
+		transformControls.update();
+		signals.rendererChanged.dispatch(  );
+
+	} );
 
 
 	// signals
@@ -256,19 +260,6 @@ var Viewport = function ( editor ) {
 	// 	render();
 
 	// } );
-
-	
-
-
-
-
-
-
-
-	// signals.attachTransform.add(function(object){
-	// 	transformControls.attach( object );
-
-	// });
 
 	signals.objectSelected.add( function ( object ) {
 
@@ -283,7 +274,7 @@ var Viewport = function ( editor ) {
 
 					selectionBox.setFromObject( object );
 					selectionBox.visible = true;
-
+					
 				}
 			}
 			else{
@@ -296,8 +287,17 @@ var Viewport = function ( editor ) {
 			}
 
 			//TODO if (object.type != 0 && editor.mode != "AnimationMode" )
-			if (editor.mode != "AnimationMode" && object.name != 'edge')
+			if (editor.mode != "AnimationMode" && object.name != 'edge' && editor.addNewEdgeMode == 0 )
 				transformControls.attach( object );
+			if ( editor.addNewEdgeMode == 1 ) {
+				if (nodePairs.length < 2) {
+					nodePairs.push(object);
+					console.log( nodePairs.length);
+				}
+				if(nodePairs.length == 2){
+					signals.addNewEdge.dispatch(nodePairs);
+				}
+			}
 
 		}
 
@@ -310,13 +310,16 @@ var Viewport = function ( editor ) {
 
 	signals.objectAdded.add( function ( object ) {
 
-	
-
 		objects.push( object );
 
-	
+	} );
+
+	signals.addNewEdgeStart.add( function ( object ) {
+		editor.addNewEdgeMode = 1;
+		nodePairs = [];
 
 	} );
+
 
 
 	signals.objectChanged.add( function ( object ) {
@@ -357,11 +360,12 @@ var Viewport = function ( editor ) {
 
 	signals.objectRemoved.add( function ( object ) {
 
-		object.traverse( function ( child ) {
+		// object.traverse( function ( child ) {
 
-			objects.splice( objects.indexOf( child ), 1 );
+		// 	objects.splice( objects.indexOf( child ), 1 );
 
-		} );
+		// } );
+		objects.splice( objects.indexOf( object ), 1 );
 
 	} );
 
@@ -414,7 +418,7 @@ var Viewport = function ( editor ) {
 
 		//if ( renderer instanceof THREE.RaytracingRenderer === false ) {
 
-			renderer.render( sceneHelpers,  editor.camera );
+		renderer.render( sceneHelpers,  editor.camera );
 
 		//}
 

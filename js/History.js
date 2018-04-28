@@ -145,6 +145,7 @@ History.prototype = {
 		if ( cmd !== undefined ) {
 
 			cmd.execute();
+			console.log(cmd)
 			this.undos.push( cmd );
 			this.editor.signals.historyChanged.dispatch( cmd );
 

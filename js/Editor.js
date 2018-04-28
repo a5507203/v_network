@@ -5,6 +5,7 @@ var Editor = function ( ) {
 	this.DEFAULT_CAMERA.position.set( 0, 0, 60);
 	this.DEFAULT_CAMERA.lookAt( new THREE.Vector3() );
 	this.mode = 'AnimationMode';
+	this.addNewEdgeMode = 0;
 
 	var Signal = signals.Signal;
 
@@ -27,20 +28,20 @@ var Editor = function ( ) {
 		showLabelsChanged: new Signal(),
 		networkElementDisplayChanged: new Signal(),
 		cameraChanged: new Signal(),
-
-		geometryChanged: new Signal(),
 		animationChanged: new Signal(),
 		objectSelected: new Signal(),
 		objectAdded: new Signal(),
-		addNewNode: new Signal(),
-		objectRemoved: new Signal(),
 		objectChanged: new Signal(),
+		addNewNode: new Signal(),
+		addNewEdge: new Signal(),
+		addNewEdgeStart: new Signal(),
+		objectRemoved: new Signal(),
 		modeChanged: new Signal(),
-		searchEdges: new Signal(),
+		updateEdges: new Signal(),
 		nodePositionChanging: new Signal(),
 		historyChanged: new Signal(),
 		refreshSidebarObjectProperties: new Signal()
-	
+		
 	
 
 	};
@@ -81,114 +82,74 @@ Editor.prototype = {
 
 
 	
-	addObject: function ( object ) {
-
-		var scope = this;
-		object.traverse( function ( child ) {
-
-			if ( child.geometry !== undefined ) scope.addGeometry( child.geometry );
-			if ( child.material !== undefined ) scope.addMaterial( child.material );
-
-		} );
-
-		this.scene.add( object );
-		this.signals.objectAdded.dispatch( object );
-		this.signals.sceneGraphChanged.dispatch();
-
-	},
-
 
 	addNode: function ( node ) {
 
-
-		console.log(node);
 		this.nodesContainer.add( node );
 		this.graph.addNode( node.graphElement );
+		for( var edge of node.graphElement.outgoingEdges ){ 
+			this.edgesContainer.add( edge );
+			this.signals.objectAdded.dispatch( edge );
+		}
+        for( var edge of node.graphElement.incomingEdges ){ 
+			this.edgesContainer.add( edge );
+			this.signals.objectAdded.dispatch( edge );
+		}
 		Config.newNodeCount += 1;
 		this.signals.objectAdded.dispatch( node );
 		this.signals.rendererChanged.dispatch();
 
 	},
 
-
-
-
-	moveObject: function ( object, parent, before ) {
-
-		if ( parent === undefined ) {
-
-			parent = this.scene;
-
-		}
-
-		parent.add( object );
-
-		// sort children array
-
-		if ( before !== undefined ) {
-
-			var index = parent.children.indexOf( before );
-			parent.children.splice( index, 0, object );
-			parent.children.pop();
-
-		}
-
-		this.signals.sceneGraphChanged.dispatch();
-
-	},
-
-
-	removeObject: function ( object ) {
-
-		if ( object.parent === null ) return; // avoid deleting the camera or scene
-
-		var scope = this;
-
-		object.traverse( function ( child ) {
-
-			scope.removeHelper( child );
-
-		} );
-
-		object.parent.remove( object );
-
-		this.signals.objectRemoved.dispatch( object );
-		this.signals.sceneGraphChanged.dispatch( );
-
-	},
-
 	removeNode: function ( node ) {
 
 	
-		var scope = this;
-
-		// object.traverse( function ( child ) {
-
-		// 	scope.removeHelper( child );
-
-		// } );
-
 		node.parent.remove( node );
-		this.graph.removeNode( node.graphElement.id );
 
+	    for( var edge of node.graphElement.outgoingEdges ){ 
+			this.edgesContainer.remove( edge );
+			this.signals.objectRemoved.dispatch( edge );
+		}
+        for( var edge of node.graphElement.incomingEdges ){ 
+			this.edgesContainer.remove( edge );
+			this.signals.objectRemoved.dispatch( edge );
+		}
+		this.deselect();
+		this.graph.removeNode( node.graphElement.id );
 		this.signals.objectRemoved.dispatch( node );
 		this.signals.rendererChanged.dispatch( );
 
 	},
 
+	addEdge: function ( edge ) {
+		console.log(edge);
+		this.edgesContainer.add(edge);
+			this.graph.nodes[edge.from].outgoingEdges.push(edge);
+		this.graph.nodes[edge.to].incomingEdges.push(edge);
+		this.signals.nodePositionChanging.dispatch(this.graph.nodes[edge.from]);
+		this.graph.addEdge(edge.from, edge.to, edge.graphElement);
+	
+		this.signals.objectAdded.dispatch( edge );
+		this.signals.rendererChanged.dispatch( );
 
+	},
 
-	//
+	removeEdge: function ( edge ) {
+
+		this.edgesContainer.remove(edge);
+		this.graph.removeEdge(edge.from, edge.to);
+		this.signals.objectRemoved.dispatch( edge );
+		this.signals.rendererChanged.dispatch( );
+
+	},
 
 	selectById: function ( id ) {
 
 		if ( id === this.camera.id ) {
-
 			this.select( this.camera );
 			return;
 
 		}
-
 		this.select( this.scene.getObjectById( id, true ) );
 
 	},
@@ -236,18 +197,10 @@ Editor.prototype = {
 		
 		if(this.selected && this.selected.name == 'edge')
 		//change the edge color back to normal on deselect
-		this.selected.material.uniforms.color.value = new THREE.Color(0x0000ff);
-		// var uuid = null;
-
-		// if ( object !== null ) {
-
-		// 	uuid = object.uuid;
-
-		// }
-
+		this.selected.material.uniforms.color.value = this.selected.color;
 		this.selected = object;
-
-		//this.config.setKey( 'selected', uuid );
+		if(object && object.name == 'node')
+			this.signals.updateEdges.dispatch( object );
 		this.signals.objectSelected.dispatch( object );
 
 	},
@@ -281,43 +234,3 @@ Editor.prototype = {
 
 };
 
-
-// function getDataURL( image ) {
-
-// 	var canvas;
-
-// 	if ( image instanceof HTMLCanvasElement ) {
-
-// 		canvas = image;
-
-// 	} else {
-
-// 		canvas = document.createElementNS( 'http://www.w3.org/1999/xhtml', 'canvas' );
-// 		canvas.width = image.width;
-// 		canvas.height = image.height;
-
-// 		var context = canvas.getContext( '2d' );
-
-// 		if ( image instanceof ImageData ) {
-
-// 			context.putImageData( image, 0, 0 );
-
-// 		} else {
-
-// 			context.drawImage( image, 0, 0, image.width, image.height );
-
-// 		}
-
-// 	}
-
-// 	if ( canvas.width > 2048 || canvas.height > 2048 ) {
-
-// 		return canvas.toDataURL( 'image/jpeg', 0.6 );
-
-// 	} else {
-
-// 		return canvas.toDataURL( 'image/png' );
-
-// 	}
-
-// }
