@@ -290,6 +290,11 @@ UI.Input.prototype.getValue = function () {
 
 };
 
+UI.Input.prototype.setMaxLength = function(length) {
+	this.dom.setAttribute('maxlength',length);
+	
+	return this;
+};
 UI.Input.prototype.setValue = function ( value ) {
 
 	this.dom.value = value;
@@ -407,7 +412,11 @@ UI.Select.prototype.setOptions = function ( options ) {
 	return this;
 
 };
+// UI.Select.prototype.getOptions = function () {
 
+// 	return this.dom.value;
+
+// };
 UI.Select.prototype.getValue = function () {
 
 	return this.dom.value;

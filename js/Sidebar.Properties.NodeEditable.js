@@ -5,11 +5,17 @@ Sidebar.Properties.nodeEditable = function ( editor, object ) {
     var graphElement = object.graphElement;
 	var coordinateRange = editor.coordinateRange;
 	var coordinateMean = editor.coordinateMean;
+
     //name
     var objectNameRow = new UI.Row();
-    var objectName = new UI.Text(graphElement.id);
+    var objectName = new UI.Input(object.graphElement.name).setMaxLength(3).setWidth( '100px' ).setFontSize( '12px' ).onChange( function () {
+		if( editor.selected)
+			editor.execute( new SetNameCommand( editor.selected, objectName.getValue() ) );
+	
+	} );
+
     
-	objectNameRow.add( new UI.Text( 'ID' ).setWidth( '90px' ) );
+	objectNameRow.add( new UI.Text( 'Name' ).setWidth( '90px' ) );
 	objectNameRow.add( objectName );
 
 	container.add( objectNameRow );
@@ -62,7 +68,7 @@ Sidebar.Properties.nodeEditable = function ( editor, object ) {
 
 		objectPositionX.setValue( convertCoordinate(object.position.x) );
 		objectPositionY.setValue( convertCoordinate(object.position.y) );
-	
+		objectName.setValue(object.graphElement.name);
 		// objectPositionX.setValue(  object.position.x);
 		// objectPositionY.setValue(object.position.y );
 

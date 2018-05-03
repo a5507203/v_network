@@ -4,7 +4,7 @@ var DeleteEdgeCommand = function ( object ) {
 	Command.call( this );
 
 	this.type = 'RemoveObjectCommand';
-	this.name = 'Remove Node';
+	this.name = 'Remove Edge';
 
 	this.edge = object;
 

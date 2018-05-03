@@ -11,16 +11,29 @@ Sidebar.Properties.edgeEditable = function ( editor, object ) {
   
     // type
     var roadTypeRow = new UI.Row();
-    var roadType = new UI.Text(graphElement.type);
+    // TODO dinamically change options by road type, road orginal capacity
+    var roadTypeOption = {};
+    for (let [capacity,type] of Object.entries(Config.roadType) ){
+        if (capacity >= graphElement.capacity )
+            roadTypeOption[capacity] = type;
+    }
+    console.log(roadTypeOption,graphElement.capacity)
+    var roadType = new UI.Select().setOptions( roadTypeOption ).setWidth( '150px' ).setValue(graphElement.modifiedCapacity).setFontSize( '12px' ).onChange( function() {
+        
+        editor.execute( new SetEdgeTypeCommand( object, roadType.getValue() ) );
+
+       
+    } );
     
 	roadTypeRow.add( new UI.Text( 'Road Type' ).setWidth( '90px' ) );
 	roadTypeRow.add( roadType );
 
     container.add( roadTypeRow );
 
+
     // capacity
     var capacityRow = new UI.Row();
-    var capacity = new UI.Text(graphElement.capacity);
+    var capacity = new UI.Text(graphElement.modifiedCapacity);
     
 	capacityRow.add( new UI.Text( 'Capacity' ).setWidth( '90px' ) );
 	capacityRow.add( capacity );
@@ -56,6 +69,24 @@ Sidebar.Properties.edgeEditable = function ( editor, object ) {
 
     container.add( powerRow );
 
+
+    signals.refreshSidebarObjectProperties.add( function ( object ) {
+
+		if ( object !== editor.selected ) return;
+
+		updateUI( object );
+
+	} );
+
+    function updateUI( object ) {
+
+
+		capacity.setValue( object.graphElement.modifiedCapacity );
+
+		// objectPositionX.setValue(  object.position.x);
+		// objectPositionY.setValue(object.position.y );
+
+	}
 
 	return container;
 

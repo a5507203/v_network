@@ -41,7 +41,20 @@ Menubar.File = function ( editor ) {
 	} );
 	options.add( option );
 
-	//
+	//Download
+	var download = new UI.Row();
+	download.setClass( 'option' );
+	download.setTextContent( 'Download' );
+	download.onClick( function () {
+
+		if ( confirm( 'Do you want to start a new game?' ) ) {
+
+			editor.clear();
+
+		}
+
+	} );
+	options.add( download );
 
 	//options.add( new UI.HorizontalRule() );
 

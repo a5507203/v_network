@@ -34,29 +34,12 @@ SetPositionCommand.prototype = {
 
 	execute: function () {
 
-		this.object.position.copy( this.newPosition );
-	//	this.editor.signals.updateEdges.dispatch(this.object);
-		this.object.graphElement.orginalCoordinate.copy(this.newNetworkPosition);
-    	this.object.graphElement.coordinate.set(this.newPosition.x,this.newPosition.y);
-		console.log(this.newPosition.x,this.newPosition.y);
-		this.object.updateMatrixWorld( true );
-		this.editor.signals.nodePositionChanging.dispatch( this.object );
-		this.editor.signals.objectChanged.dispatch( this.object );
-
+		this.editor.setNodePosition( this.object, this.newPosition, this.newNetworkPosition );
 	},
 
 	undo: function () {
 
-		this.object.position.copy( this.oldPosition );
-	//	this.editor.signals.updateEdges.dispatch(this.object);
-	console.log("undo set position");
-		this.object.graphElement.orginalCoordinate.copy(this.oldNetworkPosition);
-    	this.object.graphElement.coordinate.set(this.oldPosition.x,this.oldPosition.y);
-		this.object.updateMatrixWorld( true );
-		this.editor.signals.nodePositionChanging.dispatch(this.object);
-		this.editor.signals.objectChanged.dispatch( this.object );
-		this.editor.select( this.object );
-
+		this.editor.setNodePosition( this.object, this.oldPosition, this.oldNetworkPosition );
 	},
 
 	update: function ( command ) {

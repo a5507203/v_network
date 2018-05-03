@@ -152,6 +152,7 @@ var Viewport = function ( editor ) {
 
 				var object = intersects[ 0 ].object;
 				
+				
 				if ( object.userData.object !== undefined ) {
 
 
@@ -265,7 +266,7 @@ var Viewport = function ( editor ) {
 
 		selectionBox.visible = false;
 		transformControls.detach();
-
+		
 		if ( object !== null && object !== scene && object !== editor.camera ) {
 			
 			if( object.name == 'node') {
@@ -278,23 +279,20 @@ var Viewport = function ( editor ) {
 				}
 			}
 			else{
-			//	yourMesh.material.uniforms.yourUniform.value = whatever;
-			//object.material.needsUpdate = true;
 
-			object.material.uniforms.color.value = new THREE.Color(0x00ffff);
-				//object.material
-
+				object.material.uniforms.color.value = new THREE.Color(0x00ffff);
 			}
 
 			//TODO if (object.type != 0 && editor.mode != "AnimationMode" )
 			if (editor.mode != "AnimationMode" && object.name != 'edge' && editor.addNewEdgeMode == 0 )
 				transformControls.attach( object );
 			if ( editor.addNewEdgeMode == 1 ) {
-				if (nodePairs.length < 2) {
+				if (nodePairs.length < 2 && object.name == 'node' ) {
 					nodePairs.push(object);
-					console.log( nodePairs.length);
+					console.log( nodePairs.length );
 				}
 				if(nodePairs.length == 2){
+
 					signals.addNewEdge.dispatch(nodePairs);
 				}
 			}
@@ -311,15 +309,25 @@ var Viewport = function ( editor ) {
 	signals.objectAdded.add( function ( object ) {
 
 		objects.push( object );
+		if (object.name == 'node'){
+			console.log('push',object);
+			console.log(objects.length);
+
+		}
 
 	} );
 
 	signals.addNewEdgeStart.add( function ( object ) {
+		editor.deselect();
 		editor.addNewEdgeMode = 1;
-		nodePairs = [];
 
 	} );
 
+	signals.addNewEdgeEnd.add( function ( object ) {
+		editor.addNewEdgeMode = 0;
+		nodePairs = [];
+
+	} );
 
 
 	signals.objectChanged.add( function ( object ) {
@@ -365,7 +373,13 @@ var Viewport = function ( editor ) {
 		// 	objects.splice( objects.indexOf( child ), 1 );
 
 		// } );
-		objects.splice( objects.indexOf( object ), 1 );
+		var index = objects.indexOf(object);
+
+		if (index !== -1) {
+			objects.splice(index, 1);
+			console.log('remove ' + object.name + " "+objects.length);
+		}
+
 
 	} );
 

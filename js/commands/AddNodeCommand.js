@@ -14,7 +14,7 @@ var AddNodeCommand = function ( object ) {
 AddNodeCommand.prototype = {
 
 	execute: function ( ) {
-		console.log(this.object)
+		
 		this.editor.addNode( this.object );
 		this.editor.select( this.object );
 	

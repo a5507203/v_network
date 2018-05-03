@@ -31,9 +31,11 @@ Sidebar.Properties = function ( editor ) {
 
 
 	signals.objectSelected.add(function(object){
-		//console.log(object)
-
-		if(!object) {
+		console.log('ui Selectd',object);
+		object = editor.selected;
+		
+	
+		if(!object || editor.addNewEdgeMode == 1) {
 
 			container.setDisplay( 'none' );
 		}
@@ -77,8 +79,8 @@ Sidebar.Properties = function ( editor ) {
 		if(editor.mode != 'AnimationMode'){
 		// console.log( object.name+editor.mode)
 	
-		if (object.type == 0 ) editable = 'Editable';
-	}
+			if (object.type == 0 ) editable = 'Editable';
+		}
 		parameters.add( new Sidebar.Properties[ object.name+editable ]( editor, object ) );
 		
 

@@ -7,30 +7,35 @@ Sidebar.AddElements = function ( editor ) {
 	//title
 	
 	container.add( new UI.Text( 'Add Elements' ).setTextTransform( 'uppercase' ) );
-	container.add( new UI.Break());
-	var addNodeRow = new UI.Row();
-	var addNodeButton = new UI.Button( 'Add Node' );
+	container.add( new UI.Break(),new UI.Break());
+	var addElementRow = new UI.Row();
+	var addNodeButton = new UI.Button( 'Add Node' ).setWidth( '90px' ) ;
 	addNodeButton.onClick( function () {
 
 		signals.addNewNode.dispatch();
 
 	} );
-	addNodeRow.add(addNodeButton);
-	container.add( addNodeRow );
+	addElementRow.add(addNodeButton);
+	container.add( addElementRow );
 
-	var addEdgeRow = new UI.Row();
-	var addEdgeButton = new UI.Button( 'Add Link' );
+
+	var addEdgeButton = new UI.Button( 'Add Link' ).setWidth( '90px' ).setMarginLeft( '20px' ) ;
 	addEdgeButton.onClick( function () {
-		addEdgeButton.dom.classList.add( 'selected' );
-		signals.addNewEdgeStart.dispatch();
+		if (addEdgeButton.dom.classList.contains('selected')) {
+			addEdgeButton.dom.classList.remove( 'selected' );
+			signals.addNewEdgeEnd.dispatch();
+		}
+		else{
+			addEdgeButton.dom.classList.add( 'selected' );
+			signals.addNewEdgeStart.dispatch();
+		}
  
 	} );
-	signals.objectAdded.add(function(object) {
-		if (object.name == 'edge')
+	signals.addNewEdgeEnd.add(function(object) {
 			addEdgeButton.dom.classList.remove( 'selected' );
 	});
-	addEdgeRow.add( addEdgeButton );
-	container.add( addEdgeRow );
+	addElementRow.add( addEdgeButton );
+
 
 
 	return container;

@@ -1,5 +1,6 @@
-var Node = function (id ) {
-    this.id = id;
+var Node = function (uuid, name) {
+    this.uuid = uuid;
+    this.name = name;
     this.coordinate = { };
     this.orginalCoordinate = { };
     this.edges = { };
@@ -9,7 +10,7 @@ var Node = function (id ) {
     this.incomingEdges = [];
 }
 
-var Edge = function( lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type ) {
+var Edge = function( lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type, modifiedCapacity ) {
     this.lineWidth = lineWidth;
     this.capacity = capacity;
     this.length = length; 
@@ -19,7 +20,10 @@ var Edge = function( lineWidth, capacity, length, freeFlowTime, b, power, speedL
     this.speedLimit = speedLimit; 
     this.toll = toll; 
     this.type = type;
-
+    if( modifiedCapacity )
+        this.modifiedCapacity = modifiedCapacity;
+    else
+        this.modifiedCapacity = capacity;
 }
 
 var Flow = function( lineColor, volume, cost ) {
@@ -43,17 +47,17 @@ var Graph = function Graph() {
   Graph.prototype = {
       
     
-    createAndAddNode : function ( id ) {
+    createAndAddNode : function ( uuid, name ) {
 
-        if ( this.nodes[id] ) return;
-        this.nodes[id] = new Node(id);
-        return this.nodes[id];
+        if ( this.nodes[uuid] ) return;
+        this.nodes[uuid] = new Node( uuid, name );
+        return this.nodes[uuid];
         
     },
 
-    createNode: function( id, coordinate, orginalCoordinate ){
-        if ( this.nodes[id] ) return;
-        var newNode = new Node(id);
+    createNode: function( uuid, name, coordinate, orginalCoordinate ){
+        if ( this.nodes[uuid] ) return;
+        var newNode = new Node( uuid, name );
         newNode.coordinate = coordinate;
         newNode.orginalCoordinate = orginalCoordinate;
         return newNode;
@@ -61,58 +65,71 @@ var Graph = function Graph() {
     },
 
     addNode: function( node ){
-        this.nodes[node.id] = node; 
-        console.log(this.nodes);       
+        this.nodes[node.uuid] = node; 
+         
 
     },
 
-    setNodeCoordinate : function ( id, coordinate ) {
+    setNodeCoordinate : function ( uuid, coordinate ) {
 
-        if ( !this.nodes[id] ) return;
-        this.nodes[id].coordinate = coordinate;
+        if ( !this.nodes[uuid] ) return;
+        this.nodes[uuid].coordinate = coordinate;
         
     },
 
-    setNodeOrignalCoordinate : function ( id, orginalCoordinate ) {
+    setNodeOrignalCoordinate : function ( uuid, orginalCoordinate ) {
 
-        if ( !this.nodes[id] ) return;
-        this.nodes[id].orginalCoordinate = orginalCoordinate;
+        if ( !this.nodes[uuid] ) return;
+      
+        this.nodes[uuid].orginalCoordinate = orginalCoordinate;
         
     },
 
-    getNode : function ( id ) {
+    getNode : function ( uuid ) {
 
-        return this.nodes[id];
+        return this.nodes[uuid];
 
     },
 
-    removeNode : function ( id ) {
+    removeNode : function ( uuid ) {
 
-        if ( !this.nodes[id] ) return;
-        delete this.nodes[id];
+        if ( !this.nodes[uuid] ) return;
+        delete this.nodes[uuid];
 
         for ( const node of Object.values( this.nodes ) ) {
-            if ( !node.edges[id] ) return;
-            delete node.edges[id];
+            if ( !node.edges[uuid] ) return;
+            delete node.edges[uuid];
         }
 
 
     },
    // "Init node ", "Term node ", "Capacity ", "Length ", "Free Flow Time ", "B", "Power", "Speed limit ", "Toll ", "Type"
-    createAndAddEdge : function ( start, end, lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type ) {
-
+    createAndAddEdgeByNodeName : function ( startNodeName, endNodeName, lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type ) {
+        var start = this.findUUIDbyNodeName ( startNodeName );
+        var end = this.findUUIDbyNodeName ( endNodeName );
         if ( !this.nodes[start] || !this.nodes[end] || this.nodes[start].edges[end] ) return;
         this.nodes[start].edges[end] = new Edge( lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type );
 
     },
 
-    createEdge : function ( start, end, lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type ) {
+    findUUIDbyNodeName : function( name ) {
+        
+        for( let [key, node] of Object.entries(  this.nodes ) )
+            if ( node.name == name ) return key;
+        
 
-        if ( !this.nodes[start] || !this.nodes[end] || this.nodes[start].edges[end] ) return;
-        return new Edge( lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type );
-
+        return null;
     },
 
+    createEdge : function ( start, end, lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type, modifiedCapacity ) {
+
+        if ( !this.nodes[start] || !this.nodes[end] || this.nodes[start].edges[end] ) return;
+        return new Edge( lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type, modifiedCapacity );
+
+    },
+    hasEdge : function (start, end) {
+        return ( !this.nodes[start] || !this.nodes[end] || this.nodes[start].edges[end] );
+    },
     addEdge : function ( start, end, edge ) {
         if ( !this.nodes[start] || !this.nodes[end] || this.nodes[start].edges[end] ) return;
         this.nodes[start].edges[end] = edge;
@@ -130,17 +147,19 @@ var Graph = function Graph() {
         delete this.nodes[start].edges[end];
     },
 
-    getNeighbors : function ( id ) {
+    getNeighbors : function ( uuid ) {
 
-        if ( !this.nodes[id] ) return;
+        if ( !this.nodes[uuid] ) return;
 
-        return this.nodes[id].edges;
+        return this.nodes[uuid].edges;
     },
 
 
        // "Init node ", "Term node ", "Capacity ", "Length ", "Free Flow Time ", "B", "Power", "Speed limit ", "Toll ", "Type"
-    addFlow : function ( start, end, lineColor, volume, cost ) {
-
+    addFlowByName : function ( startNodeName, endNodeName, lineColor, volume, cost ) {
+        
+        var start = this.findUUIDbyNodeName( startNodeName );
+        var end = this.findUUIDbyNodeName( endNodeName );
         if ( !this.nodes[start] || !this.nodes[end] || this.nodes[start].flows[end] ) return;
         this.nodes[start].flows[end] = new Flow( lineColor, volume, cost );
 
@@ -159,8 +178,10 @@ var Graph = function Graph() {
 
     },
 
-    addTrip : function ( start, end, volume, lineWidth, opacity ) {
+    addTripByName : function ( startNodeName, endNodeName, volume, lineWidth, opacity ) {
 
+        var start = this.findUUIDbyNodeName( startNodeName );
+        var end = this.findUUIDbyNodeName( endNodeName );
         if ( !this.nodes[start] || !this.nodes[end] || this.nodes[start].trips[end] ) return;
         this.nodes[start].trips[end] = new Trip( volume, lineWidth, opacity );
 
