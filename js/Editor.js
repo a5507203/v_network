@@ -1,4 +1,4 @@
-var Editor = function ( ) {
+var Editor = function (  ) {
 
 	this.DEFAULT_CAMERA = new THREE.PerspectiveCamera( 50, 1, 0.1, 10000 );
 	this.DEFAULT_CAMERA.name = 'Camera';
@@ -46,16 +46,15 @@ var Editor = function ( ) {
 
 	};
 
-
-
 	this.camera = this.DEFAULT_CAMERA.clone();
 	
 	this.scene = new THREE.Scene();
 	this.scene.name = 'Scene';
 	this.scene.background = new THREE.Color( 0xAAAAAA );
-
 	this.sceneHelpers = new THREE.Scene();
+	this.fileLoader = new FileLoader( this );
 	this.history = new History( this );
+	
 	this.object = {};
 	this.helpers = {};
 	this.selected = null;
@@ -64,11 +63,11 @@ var Editor = function ( ) {
     this.nodesContainer.position.set( 0, 0, 0.04 );
     this.scene.add( this.nodesContainer );
 	this.newEdgesDict = {};
-
+	this.objects = [];
     this.edgesContainer = new THREE.Group();
     this.edgesContainer.position.set( 0, 0, 0.01 );
     this.scene.add( this.edgesContainer );
-
+	
     this.flowsContainer = new THREE.Group();
     this.flowsContainer.position.set( 0, 0, 0.02 );
     this.scene.add( this.flowsContainer );
@@ -76,6 +75,7 @@ var Editor = function ( ) {
     this.tripsContainer = new THREE.Group();
     this.tripsContainer.position.set( 0, 0, 0.02 );
     this.scene.add( this.tripsContainer );
+	this.networkVisualization = new NetworkVisualization( this );
 
 };
 

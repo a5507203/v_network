@@ -15,6 +15,7 @@
 
 		<script src="js/controls/TransformControls.js"></script>
 		<script src="js/controls/EditorControls.js"></script>
+		<script src="js/libs/jszip.js"></script>
 		<script src="js/libs/three.meshline.js"></script>
 		<script src="js/libs/three.texttexture.js"></script>
 		<script src="js/libs/three.textsprite.js"></script>
@@ -35,6 +36,7 @@
 		<script src="js/commands/SetEdgeTypeCommand.js"></script>
 		
 		<script src="js/Editor.js"></script>
+		<script src="js/FileLoader.js"></script>
 		<script src="js/History.js"></script>
 		<script src="js/Menubar.js"></script>
 		<script src="js/Menubar.File.js"></script>
@@ -67,51 +69,49 @@
 				return this.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
 			};
 
-			var loader = new THREE.FontLoader();
+		
 
 			var textureloader = new THREE.TextureLoader();
-			loader.load( 'fonts/helvetiker_regular.typeface.json', function ( font ) {
+			textureloader.load( 'image/disc.png', function( texture ) {
 
-				textureloader.load( 'image/disc.png', function( texture ) {
+				var editor = new Editor();
 
-					var editor = new Editor();
+				var viewport = new Viewport( editor );
+				document.body.appendChild( viewport.container.dom );
 
-					var viewport = new Viewport( editor );
-					document.body.appendChild( viewport.container.dom );
+				var menubar = new Menubar( editor );
+				document.body.appendChild( menubar.dom );
 
-					var menubar = new Menubar( editor );
-					document.body.appendChild( menubar.dom );
-
-					var sidebar = new Sidebar( editor );
-					document.body.appendChild( sidebar.dom );
+				var sidebar = new Sidebar( editor );
+				document.body.appendChild( sidebar.dom );
 
 
-					var toolbar = new Toolbar( editor );
-					document.body.appendChild( toolbar.dom );
-					Config.nodeTexture = texture;
-					var networkVisualization = new NetworkVisualization( editor, font, viewport );
-					document.addEventListener( 'keydown', function ( event ) {
+				var toolbar = new Toolbar( editor );
+				document.body.appendChild( toolbar.dom );
+				Config.nodeTexture = texture;
+				
+				document.addEventListener( 'keydown', function ( event ) {
 
-						switch ( event.keyCode ) {
+					switch ( event.keyCode ) {
 
-
-						}
-
-						}, false );
-
-					function onWindowResize( event ) {
-
-					editor.signals.windowResize.dispatch();
 
 					}
 
-					window.addEventListener( 'resize', onWindowResize, false );
+					}, false );
 
-					onWindowResize();
+				function onWindowResize( event ) {
 
-					} );
+				editor.signals.windowResize.dispatch();
+
+				}
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+				onWindowResize();
 
 				} );
+
+			
 
 
 

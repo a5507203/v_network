@@ -23,7 +23,7 @@ var Viewport = function ( editor ) {
 	var scene = editor.scene;
 	var sceneHelpers = editor.sceneHelpers;
 
-	var objects = this.objects = [];
+	var objects = editor.objects;
 
 	// helpers
 

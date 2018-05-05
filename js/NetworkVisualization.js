@@ -1,12 +1,13 @@
-var NetworkVisualization = function ( editor, font, viewport ) {
+var NetworkVisualization = function ( editor ) {
     this.editor = editor;
     var scene = this.scene = editor.scene;
     this.signals = editor.signals;
     //console.log(viewport);
-    this.objects = viewport.objects;
+    // var font = editor.font;
+    this.objects = editor.objects;
     this.graph = editor.graph;
    // this.texture = texture;
-    this.readNodes();
+    //this.readNodes();
 
 
     this.nodesContainer = editor.nodesContainer;
@@ -191,13 +192,70 @@ NetworkVisualization.prototype = {
 
     },
 
+    readGraphFromString: function( dataDict ){
+        this.readNodesFromString(dataDict.nodes);
+        this.readEdgesFromString(dataDict.edges);
+        this.readFlowsFromString(dataDict.flows);
+        this.readTripsFromString(dataDict.trips);
+        this.renderGraph();
 
-    // constructNodes:function ( data, graph ) {
+    },
 
+    readNodesFromString : function( data ){
 
-    
+        var scope = this;
+        Config.coordinateMean = 0;
+        Config.coordinateRange = 0;
+
        
-    // },
+        //TODO construct graph and normalize coordinate
+        var min = Infinity;
+        var max = -Infinity;
+        var normalizedData = {};
+        var len = 0;
+        
+        var lines = data.split( '\n' );
+        
+        for ( var i = 1 ; i < lines.length ; i += 1 ) {
+            
+            var line = lines[i].split( '\t' );
+            if( line.length < 4 ) continue;
+            
+            var x = parseFloat( line[1] );
+            var y = parseFloat( line[2] ); 
+            Config.coordinateMean += x + y;
+            len += 2;
+
+            if ( x < y ) {
+                if ( min > x ) min = x;
+                if ( max < y ) max = y;
+            }
+            else {
+                if ( min > y ) min = y;
+                if ( max < x ) max = x;
+            }
+            // add node and orginal coordinate data to graph structure
+            var currNodeUUID = scope.setUUID();
+            scope.graph.createAndAddNode( currNodeUUID, line[0] );
+            scope.graph.setNodeOrignalCoordinate( currNodeUUID, new THREE.Vector2( x, y ) );
+        }
+    
+        Config.coordinateMean = Config.coordinateMean / len;
+        min -= Config.coordinateMean;
+        max -= Config.coordinateMean;
+        Config.coordinateRange = Math.max(Math.abs(min), Math.abs(max));
+
+        for ( let [key, node] of Object.entries(  scope.graph.nodes ) ) {
+            
+            scope.graph.setNodeCoordinate(key, new THREE.Vector2( inverseToRealCoordinate( node.orginalCoordinate.x) , inverseToRealCoordinate( node.orginalCoordinate.y )) );
+        }
+
+        var nodesContainer = new THREE.Group();
+      
+
+
+    },
+    
 
     readEdges : function (  ) {
         var scope = this;
@@ -242,6 +300,43 @@ NetworkVisualization.prototype = {
      
     },
 
+    readEdgesFromString : function ( data  ) {
+        var scope = this;
+        var maxCapacity = -Infinity;
+        
+        var lines = data.split( '\n' );
+        var i = 0;
+        
+        while ( i < lines.length  ) {
+
+            if( lines[i].split('\t')[0] == '~ ' ) {
+                i += 1;
+                break;
+            }
+            i += 1;
+        }
+        var startIndex = i;
+        for ( ; i< lines.length ; i += 1 ) {
+            var line = lines[i].split('\t');
+            if (line.length < 10 ) continue;
+            var capacity = parseFloat(line[3]);
+            if( capacity > Config.maxCapacity ) {
+                Config.maxCapacity = capacity;
+            }
+        }
+        //Cofig.maxCapacity = maxCapacity;
+
+        for ( i = startIndex ; i< lines.length ; i += 1 ) {
+            var line = lines[i].split('\t');
+            if (line.length < 10 ) continue;
+            // make the largest value to Math.tanh(0.7)
+            var lineWidth = calculateLineWidth(parseFloat(line[3]));
+    
+            scope.graph.createAndAddEdgeByNodeName( line[1], line[2], lineWidth, parseFloat(line[3]), line[4], line[5], line[6], line[7], line[8], line[9], line[10] );
+            
+        }
+     
+    },
     readFlows : function (  ) {
 
         var scope = this;
@@ -293,10 +388,57 @@ NetworkVisualization.prototype = {
         });
     },
 
+    readFlowsFromString : function ( data ) {
+
+        var scope = this;
+        var maxVolume= -Infinity;
+
+        var lines = data.split( '\n' );
+        var i = 0;
+        
+        while ( i < lines.length  ) {
+
+            if( lines[i].split('\t')[0] == '~ ' ) {
+                i += 1;
+                break;
+            }
+            i += 1;
+        }
+        var startIndex = i;
+        //find max flow 
+        for ( ; i< lines.length ; i += 1 ) {
+            var line = lines[i].split('\t');
+            if (line.length < 7 ) continue;
+            var volume = parseFloat(line[4].replace(' ',''));
+            
+            if( volume > maxVolume ) {
+                maxVolume = volume;
+            }
+        }
+    
+        
+        for ( i = startIndex ; i< lines.length ; i += 1 ) {
+            var line = lines[i].split('\t');
+            if (line.length < 7 ) continue;
+            var lineColor = calculateColor(parseFloat(line[4].replace(' ','')),maxVolume);
+            scope.graph.addFlowByName(line[1].replace(' ',''), line[2].replace(' ',''), lineColor, line[4].replace(' ',''),line[5].replace(' ','') );
+
+        }
+
+        function calculateColor( volume, maxVolume ) {
+
+            var r = volume/maxVolume*255;
+            var g = 255 - volume/maxVolume*255;
+            return rgbToHex(r, g, 0);       
+
+        }   
+    
+    },
+
 
     readTrips : function ( ) {
         var scope = this;
-        var maxVolume= -Infinity;
+        // var maxVolume= -Infinity;
         d3.text("dataFile/SiouxFalls_trips.txt", function(data) {
             //var lines = data.split( 'Origin 	' );
 
@@ -326,7 +468,39 @@ NetworkVisualization.prototype = {
         
             scope.renderGraph( );
 
-        })
+        });
+    },
+
+
+    readTripsFromString : function ( data ) {
+        var scope = this;
+        // var maxVolume= -Infinity;
+       
+            //var lines = data.split( 'Origin 	' );
+        var volumes = data.replace(/\d+\s+:\s+/g,'').replace(/\w*\s+/g,'').replace(/.*>/g,'').replace(/;$/,'').split(';').map(Number);
+        var startNodes = data.replace(/\d+\s+:.*/g,'').replace(/\s+/g,'').replace(/.*>/g,'').replace(/[A-Za-z]+/g,',').replace(/^,/,'').split(',');
+        var minVolume = Math.min.apply(Math,volumes);
+        var maxVolume = Math.max.apply(Math,volumes);
+        var nodesNum = startNodes.length;
+        console.log(maxVolume);
+        var range = maxVolume-minVolume;
+        
+        for ( var i = 0 ; i < nodesNum ; i += 1 ) {
+        
+            for ( var j = i+1 ; j < nodesNum ; j += 1 ) {
+
+                // if ( i == j ) continue;
+                currVol = volumes[i*nodesNum+j];
+                var lineWidth = Math.round10(Math.tanh(currVol/(maxVolume)),-2);
+                if(lineWidth > 0.6) console.log(lineWidth);
+                var opacity = (currVol - minVolume)/(range);
+                scope.graph.addTripByName(startNodes[i],startNodes[j],volumes[(i+1)*(j+1)-1],lineWidth,opacity);
+
+            }
+            
+        }
+    
+    
     },
 
 
