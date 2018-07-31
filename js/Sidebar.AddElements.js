@@ -9,13 +9,14 @@ Sidebar.AddElements = function ( editor ) {
 	container.add( new UI.Text( 'Add Elements' ).setTextTransform( 'uppercase' ) );
 	container.add( new UI.Break(),new UI.Break());
 	var addElementRow = new UI.Row();
+
 	var addNodeButton = new UI.Button( 'Add Node' ).setWidth( '90px' ) ;
 	addNodeButton.onClick( function () {
 
 		signals.addNewNode.dispatch();
 
 	} );
-	addElementRow.add(addNodeButton);
+	
 	container.add( addElementRow );
 
 
@@ -34,7 +35,17 @@ Sidebar.AddElements = function ( editor ) {
 	signals.addNewEdgeEnd.add(function(object) {
 			addEdgeButton.dom.classList.remove( 'selected' );
 	});
-	addElementRow.add( addEdgeButton );
+
+	signals.edgeAddedable.add(function(linkAddedable){
+
+	console.log('asdfadfafasdfafasfasd',linkAddedable);
+	if (linkAddedable == 1) {
+		addElementRow.add(addNodeButton);
+		addElementRow.add( addEdgeButton );
+	}
+	});
+
+	
 
 
 

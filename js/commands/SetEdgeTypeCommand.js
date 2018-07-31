@@ -9,7 +9,7 @@ var SetEdgeTypeCommand = function ( object, newCapacity ) {
 	this.object = object;
 	// this.attributeName = attributeName;
   
-    this.oldCapacity = object.graphElement.capacity;
+    this.oldCapacity = object.graphElement.modifiedCapacity;
 	this.newCapacity = newCapacity;
 
 

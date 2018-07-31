@@ -8,7 +8,52 @@ var Node = function (uuid, name) {
     this.trips = { };
     this.outgoingEdges = [];
     this.incomingEdges = [];
-}
+
+
+};
+
+Node.prototype = {
+
+    toCsv: function( nodes,nodesIdList){
+        var nodeRow = this.name +','+this.orginalCoordinate.x+','+this.orginalCoordinate.y+'\n';
+
+        var edgesRows = '';
+        for( let endNodeId of nodesIdList ){
+            if (this.edges.hasOwnProperty(endNodeId)) {
+                for( let edge of this.edges[endNodeId]) {
+                    edgesRows += edge.toCsv(this.name, nodes[endNodeId].name);
+                }
+            }
+            
+        }
+
+        // GET FLOW FROM DATA STRUCTURE 
+        // var flowsRows = '';
+        // for( let endNodeId of nodesIdList){
+        //     if (this.flows.hasOwnProperty(endNodeId)) 
+        //         flowsRows += this.flows[endNodeId].toCsv(this.name, nodes[endNodeId].name);
+        // }
+
+        var tripsRow = this.name;
+        for( let endNodeId of nodesIdList ){
+            if (this.trips.hasOwnProperty(endNodeId)) {
+                tripsRow += this.trips[endNodeId].toCsv();
+
+            }
+            // else console.log(endNodeId)
+        }
+        tripsRow = tripsRow+ "\n";
+
+        return  {
+            nodeRow: nodeRow,
+            edgesRows: edgesRows,
+            // flowsRows: flowsRows,
+            tripsRow: tripsRow
+        };
+    }
+
+
+};
 
 var Edge = function( lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type, modifiedCapacity ) {
     this.lineWidth = lineWidth;
@@ -24,27 +69,54 @@ var Edge = function( lineWidth, capacity, length, freeFlowTime, b, power, speedL
         this.modifiedCapacity = modifiedCapacity;
     else
         this.modifiedCapacity = capacity;
-}
+};
+
+Edge.prototype = {
+    //Init node,Term node,Capacity,Length,Free Flow Time,B,Power,Speed limit,Toll,Type
+    toCsv: function(startNode, endNode){
+        return startNode + ',' + endNode+',' + this.modifiedCapacity + ',' + 
+        this.length + ',' + this.freeFlowTime +',' + this.b + ',' + this.power + ',' +
+        this.speedLimit +  ',' + this.toll +',' + this.type + '\n';
+    }
+    
+};
 
 var Flow = function( lineColor, volume, cost ) {
     this.lineColor = lineColor;
     this.volume = volume;
     this.cost = cost;
-} 
+};
+
+Flow.prototype = {
+    //Tail,Head,Volume,Cost
+    toCsv: function(startNode, endNode){
+        return startNode + ',' + endNode+',' + this.volume + ',' + this.cost + '\n';
+    }
+    
+};
+
 
 var Trip = function( volume, lineWidth, opacity ) {
     this.volume = volume;
     this.lineWidth = lineWidth;
     this.opacity = opacity;
 
-}
+};
+
+Trip.prototype = {
+
+    toCsv: function(){
+        return  ',' + this.volume;
+    }
+    
+};
 
 var Graph = function Graph() {
     this.nodes = {};
-  }
+};
   
  
-  Graph.prototype = {
+Graph.prototype = {
       
     
     createAndAddNode : function ( uuid, name ) {
@@ -107,32 +179,39 @@ var Graph = function Graph() {
     createAndAddEdgeByNodeName : function ( startNodeName, endNodeName, lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type ) {
         var start = this.findUUIDbyNodeName ( startNodeName );
         var end = this.findUUIDbyNodeName ( endNodeName );
-        if ( !this.nodes[start] || !this.nodes[end] || this.nodes[start].edges[end] ) return;
-        this.nodes[start].edges[end] = new Edge( lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type );
+     
+        this.addEdge(start,end,new Edge( lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type ));
 
     },
 
     findUUIDbyNodeName : function( name ) {
         
-        for( let [key, node] of Object.entries(  this.nodes ) )
-            if ( node.name == name ) return key;
-        
+        for( let [key, node] of Object.entries(  this.nodes ) ){
+           
+            // console.log('nameComb',JSON.stringify(node.name),JSON.stringify(name));
+            if ( node.name == name ) { 
+                //console.log('key',key);
+                return key;
+            }
+        }
 
         return null;
     },
 
     createEdge : function ( start, end, lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type, modifiedCapacity ) {
 
-        if ( !this.nodes[start] || !this.nodes[end] || this.nodes[start].edges[end] ) return;
-        return new Edge( lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type, modifiedCapacity );
+        if ( !this.nodes[start] || !this.nodes[end] ) return;
+        if (this.nodes[start].edges[end] == undefined) scalar = 0;
+        else scalar = this.nodes[start].edges[end].length;
+        return {edge:new Edge( lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type, modifiedCapacity ),scalar:scalar};
 
     },
-    hasEdge : function (start, end) {
-        return ( !this.nodes[start] || !this.nodes[end] || this.nodes[start].edges[end] );
-    },
+
+
     addEdge : function ( start, end, edge ) {
-        if ( !this.nodes[start] || !this.nodes[end] || this.nodes[start].edges[end] ) return;
-        this.nodes[start].edges[end] = edge;
+        if ( !this.nodes[start] || !this.nodes[end]  ) return;
+        if (this.nodes[start].edges[end] == undefined) this.nodes[start].edges[end] = [];
+        this.nodes[start].edges[end].push(edge);
     },
 
     getEdge : function ( start, end  ) {
@@ -141,11 +220,15 @@ var Graph = function Graph() {
 
     },
 
-    removeEdge : function ( start, end  ) {
+    removeEdge : function ( edge ) {
 
+        var start = edge.from;
+        var end = edge.to;
         if ( !this.nodes[start] || !this.nodes[end] || !this.nodes[start].edges[end] ) return;
-        delete this.nodes[start].edges[end];
+
+        this.remove(this.nodes[start].edges[end], edge);
     },
+    
 
     getNeighbors : function ( uuid ) {
 
@@ -160,21 +243,17 @@ var Graph = function Graph() {
         
         var start = this.findUUIDbyNodeName( startNodeName );
         var end = this.findUUIDbyNodeName( endNodeName );
-        if ( !this.nodes[start] || !this.nodes[end] || this.nodes[start].flows[end] ) return;
-        this.nodes[start].flows[end] = new Flow( lineColor, volume, cost );
+        if ( !this.nodes[start] || !this.nodes[end]  ) return;
+        if (this.nodes[start].flows[end] == undefined) this.nodes[start].flows[end] = [];
+        this.nodes[start].flows[end].push(new Flow( lineColor, volume, cost ));
 
     },
 
-    getFlow : function ( start, end  ) {
 
-        return this.nodes[start].flows[end];
-
-    },
-
-    removeFlow : function ( start, end  ) {
-
-        if ( !this.nodes[start] || !this.nodes[end] || !this.nodes[start].flows[end] ) return;
-        delete this.nodes[start].flows[end];
+    cleanFlows : function ( ) {
+        for( let node of Object.values(this.nodes)) {
+            node.flows = {};
+        }
 
     },
 
@@ -182,6 +261,8 @@ var Graph = function Graph() {
 
         var start = this.findUUIDbyNodeName( startNodeName );
         var end = this.findUUIDbyNodeName( endNodeName );
+    
+        console.log('uuid');
         if ( !this.nodes[start] || !this.nodes[end] || this.nodes[start].trips[end] ) return;
         this.nodes[start].trips[end] = new Trip( volume, lineWidth, opacity );
 
@@ -199,10 +280,74 @@ var Graph = function Graph() {
         delete this.nodes[start].trips[end];
 
     },
+    toCsv : function( ) {
+        console.log(this.nodes);
+        var nodesString = 'Node,X,Y\n';
+        var edgesString = 'Init node,Term node,Capacity,Length,Free Flow Time,B,Power,Speed limit,Toll,Type\n';
+        // var flowsString = '\n\n\n\n\nTail,Head,Volume,Cost\n';
+
+     
+        var sortedNodeIdNamePairs = sortObject(this.nodes, 'name', true);
+    
+        var nodesIdList = sortedNodeIdNamePairs.map(([uuid,name])=>  uuid);
+        // console.log(nodesIdList)
+        var tripsString = 'node,'+sortedNodeIdNamePairs.map(([uuid,name])=> name).join() + '\n';
+        // console.log(tripsString)
+
+        for(let startNode of nodesIdList ) {
+            
+            contents = this.nodes[startNode].toCsv(this.nodes,nodesIdList);
+
+            nodesString += contents.nodeRow;
+            edgesString += contents.edgesRows;
+            // flowsString += contents.flowsRows;
+            tripsString += contents.tripsRow;
+
+            // for( let key, edge of Object.entries(node.edges)){
+            //     edge.toCsv(this.nodes)
+            // }
+        }
+        
+        // // console.log(flowsString);
+        console.log(tripsString);
+        return {
+            nodes:nodesString,
+            edges:edgesString,
+            // flows:flowsString,
+            trips:tripsString
+        };
+    },
+    
+    remove: function(array, element) {
+   		var index = array.indexOf(element);
+    
+		if (index !== -1) {
+			array.splice(index, 1);
+		}
+	},
+    clear: function(){
+        this.nodes = {};
+    }
 
   
+};
+  
+  
+
+function sortObject(object, property, remainProperty){
+    var sortedArray = [];
+
+    for (let [key, value] of Object.entries(object)) {
+        sortedArray.push([key, value[property]]);
+    }
+    sortedArray.sort(function(a, b) {
+        return a[1] - b[1];
+    });
+    
+    if (!remainProperty){
+        sortedArray.map(([a,b])=>a);
+
+    }
+
+    return sortedArray;
 }
-  
-  
-
-

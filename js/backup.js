@@ -4,6 +4,8 @@ var NetworkVisualization = function ( editor ) {
     var scene = this.scene = editor.scene;
     this.signals = editor.signals;
 
+    //console.log(viewport);
+    // var font = editor.font;
     this.objects = editor.objects;
     this.graph = editor.graph;
  
@@ -21,15 +23,16 @@ var NetworkVisualization = function ( editor ) {
 
     var scope = this;
     this.signals.readFlows.add(function(flows){
-
+        console.log(flows);
         scope.graph.cleanFlows();
+        console.log(scope.graph);
         scope.readFlowsFromRawDataString(flows);
         scope.renderFlows();
         scope.signals.rendererChanged.dispatch();
 
 
     });
-
+    // console.log(signals)
     this.signals.networkElementDisplayChanged.add( function ( type, show ) {
         if (type == 0 )  scope.setPathVisible(scope.edgesContainer, show);
         if (type == 1 )  scope.setPathVisible(scope.flowsContainer, show);
@@ -48,10 +51,9 @@ var NetworkVisualization = function ( editor ) {
         // }
        // else{
             // TODO the type and capcity of the road is not correct
+            var edge = scope.graph.createEdge(startNode.uuid, endNode.uuid, calculateLineWidth(5000),0, calculateRoadLength(startNode.orginalCoordinate, endNode.orginalCoordinate), 6, 0.15, 4, 0, 0, 1,5000);
 
-            var edgeInfo = scope.graph.createEdge(startNode.uuid, endNode.uuid, calculateLineWidth(Config.minRoadType),0, calculateRoadLength(startNode.orginalCoordinate, endNode.orginalCoordinate), 6, 0.15, 4, 0, 0, 1,Config.minRoadType);
-
-            var edgeObject = scope.createEdgeObject(startNode, endNode, new THREE.Color(0xff0000), edgeInfo.edge,edgeInfo.scalar);
+            var edgeObject = scope.createEdgeObject(startNode, endNode, new THREE.Color(0xff0000), edge);
             scope.editor.addNewEdgeMode = 0;
 
             // edgeObject.graphElement = edge;
@@ -109,7 +111,7 @@ var NetworkVisualization = function ( editor ) {
     this.signals.updateEdgesPosition.add( function ( edge ) {
         var startNode = scope.graph.nodes[edge.from];
         var endNode = scope.graph.nodes[edge.to];
-        scope.changeEdgePosition( edge, new THREE.Vector3(startNode.coordinate.x, startNode.coordinate.y, 0 ), new THREE.Vector3(endNode.coordinate.x, endNode.coordinate.y, 0 ),startNode.orginalCoordinate,endNode.orginalCoordinate );
+        scope.changeEdgePosition2( edge, new THREE.Vector3(startNode.coordinate.x, startNode.coordinate.y, 0 ), new THREE.Vector3(endNode.coordinate.x, endNode.coordinate.y, 0 ),startNode.orginalCoordinate,endNode.orginalCoordinate );
    
     } );
 
@@ -127,11 +129,11 @@ var NetworkVisualization = function ( editor ) {
         
         for( var edge of node.graphElement.outgoingEdges ) {
             var endNode = scope.graph.nodes[edge.to];
-            scope.changeEdgePosition( edge, node.position, new THREE.Vector3(endNode.coordinate.x, endNode.coordinate.y, 0 ),node.graphElement.orginalCoordinate, endNode.orginalCoordinate );
+            scope.changeEdgePosition2( edge, node.position, new THREE.Vector3(endNode.coordinate.x, endNode.coordinate.y, 0 ),node.graphElement.orginalCoordinate, endNode.orginalCoordinate );
         }
         for( var edge of node.graphElement.incomingEdges ) {
             var startNode = scope.graph.nodes[edge.from];
-            scope.changeEdgePosition( edge, new THREE.Vector3(startNode.coordinate.x, startNode.coordinate.y, 0 ), node.position, startNode.orginalCoordinate, node.graphElement.orginalCoordinate );
+            scope.changeEdgePosition2( edge, new THREE.Vector3(startNode.coordinate.x, startNode.coordinate.y, 0 ), node.position, startNode.orginalCoordinate, node.graphElement.orginalCoordinate );
         }
         scope.signals.rendererChanged.dispatch( );
     } );
@@ -220,9 +222,6 @@ NetworkVisualization.prototype = {
         var maxCapacity = -Infinity;
         var lines = data.split( '\n' );
         var startIndex = 1;
-        Config.maxCapacity = 0;
-        Config.roadType = {};
-        
         for ( let i = startIndex ; i< lines.length ; i += 1 ) {
             var line = lines[i].split(',');
             if (line.length < 10 ) continue;
@@ -244,13 +243,9 @@ NetworkVisualization.prototype = {
             var lineWidth = calculateLineWidth(parseFloat(line[2]));
             scope.graph.createAndAddEdgeByNodeName( line[0], line[1], lineWidth, parseFloat(line[2]), line[3], line[4], line[5], line[6], line[7], line[8], line[9] );
         }
-      
+        // console.log(Config.roadType)
         Config.roadType = sortRoadType(Config.roadType);
-        for(let key of Object.keys(Config.roadType)) {
-            Config.minRoadType = key;
-            break;
-        }
-        
+        // console.log(Config.roadType);
     },
 
     readFlows : function ( ) {
@@ -348,7 +343,7 @@ NetworkVisualization.prototype = {
 
 
     readTripsFromString : function ( data ) {
-    
+        console.log(JSON.stringify(data));
         var scope = this;
         // var maxVolume= -Infinity;
         let startIndex = 1;
@@ -372,20 +367,24 @@ NetworkVisualization.prototype = {
 
         let range = maxVolume-minVolume;
      
-
+        console.log('max',maxVolume);
+        console.log('min',minVolume);
         for( let i = startIndex ; i < rows.length ; i += 1 ) {
             let row = rows[i].trim().split(',');
          
             if(row.length < 3 )continue;
+            console.log(row);
             startNode = row[0];
             for( let j = 1; j < endNodeNum+1 ; j += 1 ) {
 
                 let currVol = parseFloat(row[j]);
             
+                console.log('vol',currVol);
                 let lineWidth = Math.round10(Math.tanh(currVol/(maxVolume)),-2);
                 let opacity = (currVol - minVolume)/(range);
                 // if(lineWidth > 0.6) console.log(lineWidth);
-
+                console.log(lineWidth);
+                console.log(opacity);
                 let endNode = endNodesName[j];
                 scope.graph.addTripByName(startNode,endNode,currVol,lineWidth,opacity);
             } 
@@ -406,7 +405,7 @@ NetworkVisualization.prototype = {
         }   
 
         //this.setLabelsVisible(this.edgesContainer, false );
-
+        console.log(this.graph);
         this.signals.rendererChanged.dispatch();
     },
 
@@ -442,43 +441,75 @@ NetworkVisualization.prototype = {
 
     },
 
+    changeEdgePosition : function( edge, position, isStart ) {
 
+        var startPos;
+       // console.log(edge);
+        var endPos;
+        if ( isStart == 1 ) {
+            startPos = position.clone();
+            endPos = new THREE.Vector3(this.graph.nodes[edge.to].coordinate.x, this.graph.nodes[edge.to].coordinate.y, 0 );
+        }
+        else{
+          
 
-    changeEdgePosition : function( edge, startPosition, endPosition, realStartPos, realEndPos ) {
-        
-        var startPos = startPosition.clone();
-     
-        var endPos = endPosition.clone();
-        edge.graphElement.length = calculateRoadLength( realStartPos, realEndPos );
+            startPos = new THREE.Vector3(this.graph.nodes[edge.from].coordinate.x, this.graph.nodes[edge.from].coordinate.y, 0 );
+            endPos = position.clone();
+        }
+       
         var arrowDirection = new THREE.Vector3().subVectors( endPos, startPos ).normalize();
         var perpendicularVector = this.getPerpendicularVector(arrowDirection);
- 
         endPos.addVectors( endPos, perpendicularVector );
         startPos.addVectors( startPos, perpendicularVector );
 
         startPos.addVectors(startPos,arrowDirection );
         endPos.subVectors(endPos,arrowDirection );
 
-        var distance = startPos.distanceTo( endPos );
-        var middlePoint = new THREE.Vector3().addVectors( endPos, startPos ).multiplyScalar(0.5);
+        var geometry = new THREE.Geometry();
+        geometry.vertices.push( startPos );
+        geometry.vertices.push( endPos );
 
-        //move the middle control point along the perpendiculaer vector with dynamic scalar related to the distance  
-        middlePoint.addVectors( middlePoint, perpendicularVector.multiplyScalar(Math.log(edge.scalar*distance+1)) );
-        var curve = new THREE.QuadraticBezierCurve3(
-            startPos,
-            middlePoint,
-            endPos
-        
-        );
-
-        var points = curve.getPoints( 50 );
-        var arrowPosition = points[parseInt(points.length/2)];
-        var geometry = new THREE.Geometry().setFromPoints(points);
         var row = new MeshLine();
+
         row.setGeometry( geometry );
+    
 
         var arrow = edge.children[0];
         arrow.setDirection(arrowDirection);
+           var arrowPosition = new THREE.Vector3().addVectors( startPos, endPos ).divideScalar(2);
+        arrow.position.set(arrowPosition.x, arrowPosition.y,0);
+        edge.geometry.dispose();
+      
+        edge.geometry = row.geometry;
+
+    },
+
+    changeEdgePosition2 : function( edge, startPosition, endPosition, realStartPos, realEndPos ) {
+
+        var startPos = startPosition.clone();
+       // console.log(edge);
+        var endPos = endPosition.clone();
+        edge.graphElement.length = calculateRoadLength( realStartPos, realEndPos );
+        var arrowDirection = new THREE.Vector3().subVectors( endPos, startPos ).normalize();
+        var perpendicularVector = this.getPerpendicularVector(arrowDirection);
+        endPos.addVectors( endPos, perpendicularVector );
+        startPos.addVectors( startPos, perpendicularVector );
+
+        startPos.addVectors(startPos,arrowDirection );
+        endPos.subVectors(endPos,arrowDirection );
+
+        var geometry = new THREE.Geometry();
+        geometry.vertices.push( startPos );
+        geometry.vertices.push( endPos );
+
+        var row = new MeshLine();
+
+        row.setGeometry( geometry );
+    
+
+        var arrow = edge.children[0];
+        arrow.setDirection(arrowDirection);
+           var arrowPosition = new THREE.Vector3().addVectors( startPos, endPos ).divideScalar(2);
         arrow.position.set(arrowPosition.x, arrowPosition.y,0);
         edge.geometry.dispose();
       
@@ -492,8 +523,10 @@ NetworkVisualization.prototype = {
 
     renderEdges: function ( node ) {
         for( let [endNodeKey,edges] of Object.entries( node.edges )) {
+         
             for ( var i = 0 ; i<edges.length ; i += 1  ) {
-                var edgeObject = this.createEdgeObject(node,this.graph.nodes[endNodeKey],Config.lineColor, edges[i],i);
+                var edgeObject = this.createEdgeObject(node,this.graph.nodes[endNodeKey],Config.lineColor, edges[i],i+1);
+    
                 this.edgesContainer.add(edgeObject);
                 this.objects.push(edgeObject);
                 node.outgoingEdges.push(edgeObject);
@@ -506,39 +539,48 @@ NetworkVisualization.prototype = {
 
     createEdgeObject: function ( startNode ,endNode, color, edge, scalar) {
         var key = endNode.uuid;
-
+        console.log(edge);
         var lineWidth = edge.lineWidth;
-
         var capacity = edge.capacity;
         // init start and end position of edge and create edge
         var startPos = new THREE.Vector3( startNode.coordinate.x, startNode.coordinate.y, 0 );
         var endPos = new THREE.Vector3( endNode.coordinate.x, endNode.coordinate.y, 0 );
+        var distance = startPos.distanceTo( endPos )/10;
+        console.log(distance)
+       
 
         // transfer the row along the perpendicular vector position and arrow direction
         var arrowDirection = new THREE.Vector3().subVectors( endPos, startPos ).normalize();
         var perpendicularVector = this.getPerpendicularVector(arrowDirection);
 
-    
         endPos.addVectors( endPos, perpendicularVector );
-        startPos.addVectors( startPos, perpendicularVector);
+        startPos.addVectors( startPos, perpendicularVector );
 
         startPos.addVectors(startPos,arrowDirection );
         endPos.subVectors(endPos,arrowDirection );
-
-        var distance = startPos.distanceTo( endPos );
-
+        
         var middlePoint = new THREE.Vector3().addVectors( endPos, startPos ).multiplyScalar(0.5);
-
-        middlePoint.addVectors( middlePoint, perpendicularVector.multiplyScalar(Math.log(scalar*distance+1)) );
+        // console.log(scalar)
+        middlePoint.addVectors( middlePoint, perpendicularVector.multiplyScalar(scalar*distance) );
         var curve = new THREE.QuadraticBezierCurve3(
             startPos,
             middlePoint,
             endPos
         
         );
+
         var points = curve.getPoints( 50 );
+
         var arrowPosition = points[parseInt(points.length/2)];
+        console.log(arrowPosition);
         var geometry = new THREE.Geometry().setFromPoints(points);
+
+        /* orignal
+        var geometry = new THREE.Geometry();
+        geometry.vertices.push( startPos );
+        geometry.vertices.push( endPos );
+        */
+   
         var row = new MeshLine();
         row.setGeometry( geometry );
         //var lineColor = new THREE.Color(color);
@@ -547,7 +589,7 @@ NetworkVisualization.prototype = {
         var edgeObject = new THREE.MeshLine(row.geometry, material);
         edgeObject.color = color;
         edgeObject.name = 'edge';
-        edgeObject.scalar = scalar;
+  
 
         // add arrow to indicate the direction
         var arrow = this.renderArrow( arrowDirection, arrowPosition ); 
@@ -566,55 +608,39 @@ NetworkVisualization.prototype = {
 
     renderFlows: function (  ) {
         this.flowsContainer.children = [];
-        for ( let node of Object.values(this.graph.nodes) ) {
-            for( let [key,flows] of Object.entries( node.flows )) {
-                for( var i = 0; i< flows.length ; i += 1) {
-                    // init start and end position of flow
-                    var flow = flows[i];
-                    var startPos = new THREE.Vector3( node.coordinate.x, node.coordinate.y, 0 );
-                    var endPos = new THREE.Vector3( this.graph.nodes[key].coordinate.x, this.graph.nodes[key].coordinate.y, 0 );
-                    //get arrow direction, along the p1 and p2
-                    var arrowDirection = new THREE.Vector3().subVectors( endPos, startPos ).normalize();
-                    //transfer the p1 and p2 along perpendicular vector
-                    var perpendicularVector = this.getPerpendicularVector(arrowDirection);
-                    endPos.addVectors( endPos, perpendicularVector );
-                    startPos.addVectors( startPos, perpendicularVector);
-                    
+        for ( let [key,node] of Object.entries(this.graph.nodes) ) {
+            for( let key of Object.keys( node.flows )) {
+    
+                // init start and end position of flow
+                var startPos = new THREE.Vector3( node.coordinate.x, node.coordinate.y, 0 );
+                var endPos = new THREE.Vector3( this.graph.nodes[key].coordinate.x, this.graph.nodes[key].coordinate.y, 0 );
+                var arrowDirection = new THREE.Vector3().subVectors( endPos, startPos ).normalize();
+                var perpendicularVector = arrowDirection.clone().applyAxisAngle(this.unitZVector, Math.PI/2).divideScalar(2);
+                // transfer the row along the perpendicular vector position
+                endPos.addVectors( endPos, perpendicularVector );
+                startPos.addVectors( startPos, perpendicularVector );
 
-                    var distance = startPos.distanceTo( endPos );
-
-                    var middlePoint = new THREE.Vector3().addVectors( endPos, startPos ).multiplyScalar(0.5);
-
-                    middlePoint.addVectors( middlePoint, perpendicularVector.multiplyScalar(Math.log(i*distance+1)) );
-                    var curve = new THREE.QuadraticBezierCurve3(
-                        startPos,
-                        middlePoint,
-                        endPos
-                    
-                    );
-                    var points = curve.getPoints( 50 );
-                    var arrowPosition = points[parseInt(points.length/2)];
-                    var geometry = new THREE.Geometry().setFromPoints(points);
-                    var row = new MeshLine();
-                    row.setGeometry( geometry );
-
-
-                    var material = new MeshLineMaterial({color:new THREE.Color(flow.lineColor),sizeAttenuation:true,lineWidth: node.edges[key][i].lineWidth, transparent:false, opacity:1});
-                    var flowsObject = new THREE.Mesh( row.geometry, material );
-                    //add arrow to indicate the direction
-                    var arrow = this.renderArrow( arrowDirection, arrowPosition ); 
-                    flowsObject.add(arrow);
-                
-                    //var capcityLabel = this.renderPathLabel( startPos, endPos, perpendicularVector, node.edges[key].capacity );
-                // flows.add(capcityLabel)
-                    this.flowsContainer.add(flowsObject);
-                }
+                var geometry = new THREE.Geometry();
+                geometry.vertices.push( startPos );
+                geometry.vertices.push( endPos );
+                // create a row object to indicate flow
+                var row = new MeshLine();
+                row.setGeometry( geometry );
+                var material = new MeshLineMaterial({color:new THREE.Color(node.flows[key].lineColor),sizeAttenuation:true,lineWidth: node.edges[key].lineWidth, transparent:false, opacity:1});
+                var flowsObject = new THREE.Mesh( row.geometry, material );
+                //add arrow to indicate the direction
+                var arrow = this.renderArrow( arrowDirection, startPos, endPos ); 
+                flowsObject.add(arrow);
+            
+                //var capcityLabel = this.renderPathLabel( startPos, endPos, perpendicularVector, node.edges[key].capacity );
+            // flows.add(capcityLabel)
+                this.flowsContainer.add(flowsObject);
             }
         }
     },
 
     renderTrips: function ( node ) {
-
+        console.log('renderTrips');
 
         for( let [endNode,trips] of Object.entries( node.trips )) {
   
@@ -622,7 +648,8 @@ NetworkVisualization.prototype = {
             var startPos = new THREE.Vector3( node.coordinate.x, node.coordinate.y, 0 );
             var endPos = new THREE.Vector3( this.graph.nodes[endNode].coordinate.x, this.graph.nodes[endNode].coordinate.y, 0 );
 
-    
+            // console.log(endNode,trips)
+            // console.log(startPos,endPos)
             // break
             var geometry = new THREE.Geometry();
             geometry.vertices.push( startPos );

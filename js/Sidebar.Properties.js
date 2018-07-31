@@ -31,7 +31,7 @@ Sidebar.Properties = function ( editor ) {
 
 
 	signals.objectSelected.add(function(object){
-		console.log('ui Selectd',object);
+
 		object = editor.selected;
 		
 	

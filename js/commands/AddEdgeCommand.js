@@ -14,7 +14,7 @@ var AddEdgeCommand = function ( object ) {
 AddEdgeCommand.prototype = {
 
 	execute: function ( ) {
-		console.log('n')
+
 		this.editor.addEdge( this.object );
 		this.editor.select( this.object );
 	

@@ -12,16 +12,15 @@ Sidebar.Properties.edgeEditable = function ( editor, object ) {
     // type
     var roadTypeRow = new UI.Row();
     // TODO dinamically change options by road type, road orginal capacity
-    var roadTypeOption = {};
-    for (let [capacity,type] of Object.entries(Config.roadType) ){
-        if (capacity >= graphElement.capacity )
-            roadTypeOption[capacity] = type;
-    }
-    console.log(roadTypeOption,graphElement.capacity)
-    var roadType = new UI.Select().setOptions( roadTypeOption ).setWidth( '150px' ).setValue(graphElement.modifiedCapacity).setFontSize( '12px' ).onChange( function() {
-        
+    // var roadTypeOption = {};
+    // for (let [capacity,type] of Object.entries(Config.roadType) ){
+    //     if (capacity >= graphElement.capacity )
+    //         roadTypeOption[capacity] = type;
+    // }
+    //console.log(roadTypeOption,graphElement.capacity);
+   
+    var roadType = new UI.Select().setOptions( Config.roadType ).setWidth( '150px' ).setValue(graphElement.modifiedCapacity).setFontSize( '12px' ).onChange( function() {
         editor.execute( new SetEdgeTypeCommand( object, roadType.getValue() ) );
-
        
     } );
     

@@ -6,7 +6,7 @@ Sidebar.Invoice = function ( editor ) {
 
 	var container = new UI.Panel();
 	
-	container.add( new UI.Text( 'INVOICE' ) );
+	container.add( new UI.Text( 'BUDGET' ) );
 
 
 	container.add( new UI.Break(), new UI.Break() );
@@ -27,9 +27,10 @@ Sidebar.Invoice = function ( editor ) {
 
 
 	function buildHTML( edge ) {
-		var deltaCapacity = edge.graphElement.modifiedCapacity - edge.graphElement.capacity;
+		var deltaCapacity = (edge.graphElement.modifiedCapacity - edge.graphElement.capacity)*edge.graphElement.length/1000000;
+		if(deltaCapacity < 0) deltaCapacity = 0;
 		Config.totalLeft -= deltaCapacity; 
-		var html =  '&nbsp;Edge&nbsp;from&nbsp;'+graph.nodes[edge.from].name + '&nbsp;to&nbsp;' + graph.nodes[edge.to].name + '&nbsp;with&nbsp;capacity&nbsp;'+deltaCapacity;
+		var html =  '&nbsp;Edge&nbsp;from&nbsp;'+graph.nodes[edge.from].name + '&nbsp;to&nbsp;' + graph.nodes[edge.to].name + '&nbsp;with&nbsp;cost&nbsp;'+deltaCapacity;
 
 		return html;
 
@@ -67,6 +68,7 @@ Sidebar.Invoice = function ( editor ) {
 		var options = [];
 		var pad = 0;
 		Config.totalLeft = Config.maxLengthAdd;
+		console.log(newEdgesDict)
 		for ( let [uuid, edge] of Object.entries((newEdgesDict))) {
 		
             var option = buildOption( uuid, edge, false );

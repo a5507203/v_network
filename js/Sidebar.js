@@ -7,12 +7,19 @@ var Sidebar = function ( editor ) {
 
 	var animationModeTab = new UI.Text( 'ANIMATION' ).onClick( onClick );
 	var editModeTab = new UI.Text( 'EDIT' ).onClick( onClick );
-	var settingsTab  = new UI.Text( 'SETTINGS' ).onClick( onClick );
+	var newGameTab  = new UI.Text( 'NEW GAME' ).onClick( onClick );
 	
 	var tabs = new UI.Div();
 	tabs.setId( 'tabs' );
-	tabs.add( animationModeTab, editModeTab, settingsTab );
+	tabs.add( newGameTab, animationModeTab, editModeTab );
 	container.add( tabs );
+
+	var newGame = new UI.Span().add(
+		new Sidebar.Settings( editor )
+
+	);
+	container.add( newGame );
+
 
 	var animationMode = new UI.Span().add(
 		//new Sidebar.Properties( editor )
@@ -30,11 +37,7 @@ var Sidebar = function ( editor ) {
 	container.add( editMode );
 
 
-	var settings = new UI.Span().add(
-		new Sidebar.Settings( editor )
 
-	);
-	container.add( settings );
 
 	
 
@@ -48,11 +51,11 @@ var Sidebar = function ( editor ) {
 
 		animationModeTab.setClass( '' );
 		editModeTab.setClass( '' );
-		settingsTab.setClass( '' );
+		newGameTab.setClass( '' );
 
 		animationMode.setDisplay( 'none' );
 		editMode.setDisplay( 'none' );
-		settings.setDisplay( 'none' );
+		newGame.setDisplay( 'none' );
 
 		switch ( section ) {
 			case 'ANIMATION':
@@ -66,15 +69,15 @@ var Sidebar = function ( editor ) {
 				signals.modeChanged.dispatch('EditMode');
 				editMode.setDisplay( '' );
 				break;
-			case 'SETTINGS':
-				settingsTab.setClass( 'selected' );
-				settings.setDisplay( '' );
+			case 'NEW GAME':
+				newGameTab.setClass( 'selected' );
+				newGame.setDisplay( '' );
 				break;
 		}
 
 	}
 
-	select( 'ANIMATION' );
+	select( 'NEW GAME' );
 	return container;
 
 };

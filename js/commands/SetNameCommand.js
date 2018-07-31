@@ -11,7 +11,7 @@ var SetNameCommand = function ( object, newName ) {
   
     this.oldName = object.graphElement.name;
 	this.newName = newName;
-      console.log(this.newName,this.oldName,newName)
+    //   console.log(this.newName,this.oldName,newName)
 
 };
 

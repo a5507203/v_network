@@ -951,6 +951,13 @@ UI.Button.prototype.setLabel = function ( value ) {
 	return this;
 
 };
+UI.Button.prototype.setRight = function ( ) {
+
+	this.dom.style = "float:right";
+
+	return this;
+
+};
 
 
 // Modal

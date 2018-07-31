@@ -6,19 +6,20 @@ var Editor = function (  ) {
 	this.DEFAULT_CAMERA.lookAt( new THREE.Vector3() );
 	this.mode = 'AnimationMode';
 	this.addNewEdgeMode = 0;
-
+	this.currGame = '';
 	var Signal = signals.Signal;
+	this.linkAddable = 0;
 
 	this.signals = {
 
-
 		editorCleared: new Signal(),
-
 		savingStarted: new Signal(),
 		savingFinished: new Signal(),
-
+		loadDataUrl: new Signal(),	
+		readFlows: new Signal(),
 		rendererChanged: new Signal(),
-
+		userLogin: new Signal(),
+		refreshAvaiableGames: new Signal(),
 		windowResize: new Signal(),
 		showGridChanged: new Signal(),
 		showEdgesChanged: new Signal(),
@@ -40,10 +41,11 @@ var Editor = function (  ) {
 		nodePositionChanging: new Signal(),
 		historyChanged: new Signal(),
 		refreshSidebarObjectProperties: new Signal(),
-		lineWidthChanged: new Signal()
+		lineWidthChanged: new Signal(),
+		isAdmin: new Signal(),
+		publishGraph: new Signal(),
+		edgeAddedable:new Signal()
 		
-	
-
 	};
 
 	this.camera = this.DEFAULT_CAMERA.clone();
@@ -84,13 +86,11 @@ Editor.prototype = {
 
 	setNodeName: function ( node, name ) {
 		node.graphElement.name = name;
-		console.log(node.graphElement);
 		node.children[0].material.map.text = name;
 		this.signals.rendererChanged.dispatch();
 	},
 
 	setNodePosition: function( object, newPosition , newNetworkPosition){
-
 		object.position.copy( newPosition );
 		object.graphElement.orginalCoordinate.copy(newNetworkPosition);
     	object.graphElement.coordinate.set(newPosition.x,newPosition.y);
@@ -131,15 +131,13 @@ Editor.prototype = {
 			this.signals.objectRemoved.dispatch( edge );
 			this.remove( this.graph.nodes[edge.to].incomingEdges, edge );
 			delete this.newEdgesDict[edge.uuid];
-			//this.graph.nodes[edge.to].incomingEdges.remove(edge);
+	
 		}
         for( var edge of node.graphElement.incomingEdges ){ 
 			this.edgesContainer.remove( edge );
 			this.signals.objectRemoved.dispatch( edge );
-			//this.graph.nodes[edge.from].outgoingEdges.remove(edge);
 			this.remove( this.graph.nodes[edge.from].outgoingEdges, edge );
 			delete this.newEdgesDict[edge.uuid];
-			//console.log(edge);
 		}
 		// node.graphElement.outgoingEdges = [];
 		// node.graphElement.incomingEdges = [];
@@ -151,12 +149,11 @@ Editor.prototype = {
 	},
 
 	addEdge: function ( edge ) {
-		//console.log(edge);
+
 		this.edgesContainer.add(edge);
 		this.newEdgesDict[edge.uuid] = edge;
 		this.graph.nodes[edge.from].outgoingEdges.push(edge);
 		this.graph.nodes[edge.to].incomingEdges.push(edge);
-	//	this.signals.nodePositionChanging.dispatch(this.graph.nodes[edge.from]);
 		this.signals.updateEdgesPosition.dispatch(edge);
 		//updateEdgesPosition
 		this.graph.addEdge(edge.from, edge.to, edge.graphElement);
@@ -168,7 +165,7 @@ Editor.prototype = {
 	removeEdge: function ( edge ) {
 
 		this.edgesContainer.remove(edge);
-		this.graph.removeEdge(edge.from, edge.to);
+		this.graph.removeEdge(edge);
 		delete this.newEdgesDict[edge.uuid];
 		this.remove( this.graph.nodes[edge.from].outgoingEdges, edge );
 		this.remove( this.graph.nodes[edge.to].incomingEdges, edge );
@@ -186,6 +183,7 @@ Editor.prototype = {
 			this.newEdgesDict[edge.uuid] = edge;
 		}
 		else if(this.newEdgesDict.hasOwnProperty(edge.uuid) && edge.graphElement.capacity == edge.graphElement.modifiedCapacity  ){
+	
 			delete this.newEdgesDict[edge.uuid];
 
 		}
@@ -210,7 +208,7 @@ Editor.prototype = {
 		var scope = this;
 
 		this.scene.traverse( function ( child ) {
-			//console.log(uuid);
+
 			if ( child.uuid === uuid ) {
 
 				scope.select( child );
@@ -225,7 +223,7 @@ Editor.prototype = {
 		var scope = this;
 		var curr = null;
 		this.scene.traverse( function ( child ) {
-			//console.log(uuid);
+
 			if ( child.uuid === uuid ) {
 
 				curr =  child;
@@ -256,8 +254,45 @@ Editor.prototype = {
 		this.signals.objectSelected.dispatch( object );
 
 	},
+	clear : function(){
 
+		this.history.clear();
+		this.camera.copy( this.DEFAULT_CAMERA );
+		this.newEdgesDict = {};
+		this.objects = [];
+		this.object = {};
+		this.helpers = {};
+		this.selected = null;
+		this.graph.clear();
+		this.removeObjects(this.edgesContainer);
+		this.removeObjects(this.nodesContainer);
+		this.removeObjects(this.flowsContainer);
+		this.removeObjects(this.tripsContainer);
 
+		Config.coordinateMean = 0;
+		Config.coordinateRange = 2000;
+		Config.newNodeCount  = 0;
+		Config.newEdgeCount = 0;
+		console.log(this.scene);
+		
+		// while ( .length > 0 ) {
+
+		// 	this.removeObject( objects[ 0 ] );
+
+		// }
+	},
+	removeObjects: function ( parent ) {
+		var objects = parent.children;
+		while(objects.length>0){
+		
+
+			parent.remove( objects[0] );
+
+			this.signals.objectRemoved.dispatch( objects[0] );
+			this.signals.rendererChanged.dispatch();
+		}
+
+	},
 	objectByUuid: function ( uuid ) {
 
 		return this.scene.getObjectByProperty( 'uuid', uuid, true );
@@ -282,12 +317,12 @@ Editor.prototype = {
 
 	},
 	remove: function(array, element) {
-    var index = array.indexOf(element);
+   		var index = array.indexOf(element);
     
-    if (index !== -1) {
-        array.splice(index, 1);
-    }
-}
+		if (index !== -1) {
+			array.splice(index, 1);
+		}
+	}
 
 };
 
