@@ -12,4 +12,8 @@ var Config = {
     maxLengthAdd: 100000,
     totalLeft: 100000,
     host:'https://52.63.197.231'
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> dca6cb885b4ca4e66be341f5b3e56bfaf27fd188
