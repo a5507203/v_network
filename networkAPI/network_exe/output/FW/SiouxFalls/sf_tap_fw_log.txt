@@ -1,0 +1,15 @@
+This license is for academic use only !!!
+Started: Fri Jul 13 16:30:43 2018
+Text user interface file: control.tui
+Traffic Assignment Problem solved by Frank Wolfe
+Trees rooted at origins. 
+
+Assignment iterations 50  
+Relative Gap target 1e-020 
+Time Limit 3.6e+006 
+
+
+In 60 links out of 76 (78.947368%) volume exceeds capacity. 
+
+Run Ended: Fri Jul 13 16:30:43 2018 
+
