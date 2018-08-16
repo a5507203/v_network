@@ -3,7 +3,7 @@ var SetEdgeTypeCommand = function ( object, newCapacity ) {
 	Command.call( this );
 
 	this.type = 'SetCommand';
-	this.name = 'Set Edge Type ' + type;
+	this.name = 'Set Link Type ' + type;
 	// this.updatable = true;
 
 	this.object = object;

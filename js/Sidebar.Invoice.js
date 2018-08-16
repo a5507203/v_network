@@ -30,7 +30,7 @@ Sidebar.Invoice = function ( editor ) {
 		var deltaCapacity = (edge.graphElement.modifiedCapacity - edge.graphElement.capacity)*edge.graphElement.length/1000000;
 		if(deltaCapacity < 0) deltaCapacity = 0;
 		Config.totalLeft -= deltaCapacity; 
-		var html =  '&nbsp;Edge&nbsp;from&nbsp;'+graph.nodes[edge.from].name + '&nbsp;to&nbsp;' + graph.nodes[edge.to].name + '&nbsp;with&nbsp;cost&nbsp;'+deltaCapacity;
+		var html =  '&nbsp;Link&nbsp;from&nbsp;'+graph.nodes[edge.from].name + '&nbsp;to&nbsp;' + graph.nodes[edge.to].name + '&nbsp;with&nbsp;cost&nbsp;'+deltaCapacity;
 
 		return html;
 

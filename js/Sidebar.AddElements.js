@@ -36,13 +36,17 @@ Sidebar.AddElements = function ( editor ) {
 			addEdgeButton.dom.classList.remove( 'selected' );
 	});
 
-	signals.edgeAddedable.add(function(linkAddedable){
+	signals.edgeNodeOption.add(function(linkOption, nodeOption){
+		
+		addElementRow.clear();
 
-	console.log('asdfadfafasdfafasfasd',linkAddedable);
-	if (linkAddedable == 1) {
-		addElementRow.add(addNodeButton);
-		addElementRow.add( addEdgeButton );
-	}
+		if (nodeOption == 1) {
+			addElementRow.add(addNodeButton);
+
+		}
+		if( linkOption == 1){
+			addElementRow.add( addEdgeButton );
+		}
 	});
 
 	

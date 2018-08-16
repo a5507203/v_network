@@ -4,6 +4,7 @@ FileLoader = function ( editor ) {
     this.EDGEFILENAME = 'networks.csv';
     this.NODEFILENAME = 'nodes.csv'; 
     this.TRIPFILENAME = 'trips.csv';
+    this.GAMEINFOFILE = 'gameInfo.csv';
     var scope = this;
     var signals = this.signals = editor.signals;
     var reader = this.reader = new FileReader();
@@ -13,6 +14,9 @@ FileLoader = function ( editor ) {
         scope.loadDataUrl( url ); 
     });
 
+    // signals.loadSavedProgress.add(function( url ){
+    //     scope.loadSavedProgress( url ); 
+    // });
 };
 
 FileLoader.prototype = {
@@ -38,12 +42,6 @@ FileLoader.prototype = {
                     checkCompete();
                 });
 
-                // zip.files[scope.FLOWFILENAME].async('string').then(function (fileData) {
-                //     dataDict.flows = fileData;
-                //     count += 1;
-                //     //console.log(JSON.stringify(fileData));
-                //     checkCompete();
-                // });
 
                 zip.files[scope.TRIPFILENAME].async('string').then(function (fileData) {
                     dataDict.trips = fileData;
@@ -52,9 +50,19 @@ FileLoader.prototype = {
                     checkCompete();
                 });
                 
+                if(!zip.files[scope.GAMEINFOFILE]){
+                    count += 1;
+                }else{
+                    zip.files[scope.GAMEINFOFILE].async('string').then(function (fileData) {
+                    
+                        if(fileData != '') scope.signals.loadGameName.dispatch(fileData);
+                        count += 1;
+                        checkCompete();
+                    });
+                }
             });
             function checkCompete (){
-                if(count == 3 ) {
+                if(count == 4 ) {
                     console.log(dataDict);
                     editor.networkVisualization.readGraphFromString(dataDict);
                 }
@@ -73,13 +81,20 @@ FileLoader.prototype = {
             // dataDict.flows = network.flows;
         
             dataDict.trips = network.trips;
-            // console.log(network.flows);
-            editor.linkAddedable = network.linkAddedable;
-            console.log(dataDict);
-            scope.signals.edgeAddedable.dispatch(network.linkAddedable); 
+            editor.linkAddable = network.linkAddedable;
+            editor.nodeMoveable = network.nodeMoveable;
+
+            scope.signals.edgeNodeOption.dispatch(network.linkAddedable, network.nodeMoveable); 
             editor.networkVisualization.readGraphFromString(dataDict);
 	
         });
+    },
+
+    loadSavedProgress: function( network ){
+
+            this.signals.edgeNodeOption.dispatch(network.linkAddedable, network.nodeMoveable); 
+            this.signals.loadGameName.dispatch(network.currGame);
+            editor.networkVisualization.readGraphFromString(network);
     }
 
 };

@@ -26,7 +26,7 @@ Sidebar.Settings = function ( editor ) {
     var newGameList = new UI.Select().setWidth( '250px' ).onChange( function() {
 		var currGame = newGameList.getValue();
 		editor.currGame = currGame;
-		console.log(currGame)
+		console.log('getHere');
 		for ( var maxScoreRecord of maxScores){
 			if (maxScoreRecord._id.networkID == currGame) {
 				maxScore.setValue(maxScoreRecord.maxscore);
@@ -36,10 +36,14 @@ Sidebar.Settings = function ( editor ) {
 		// console.log(maxScores)
     } );
 
+	signals.loadGameName.add(function(currGame){
+		editor.currGame = currGame;
+		newGameList.setValue(currGame);
+	});
+
 	newGameRow.add( new UI.Text( 'AVAIABLE GAMES' ));
 	container.add( newGameRow );
 	container.add( newGameList );
-
     // maxScore
     var maxScoreRow = new UI.Row();
     var maxScore = new UI.Text();

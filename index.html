@@ -10,6 +10,7 @@
 		<link id="theme" href="css/dark.css" rel="stylesheet" />
 		<link id="loginCSS" href="css/login.css" rel="stylesheet" />
 		
+		<script src="js/Colors.js"></script>
 		<script src="js/libs/decimalAdjustment.js"></script>
 		<script src="js/libs/FileSaver.js"></script>
 		<script src="js/libs/three.js"></script>
@@ -40,6 +41,7 @@
 		<script src="js/Editor.js"></script>
 		<script src="js/FileLoader.js"></script>
 		<script src="js/History.js"></script>
+		<script src="js/Storage.js"></script>
 		<script src="js/Menubar.js"></script>
 		<script src="js/Menubar.File.js"></script>
 		<script src="js/Menubar.Help.js"></script>
@@ -93,6 +95,47 @@
 				document.body.appendChild( toolbar.dom );
 				var authentication = new Authentication(editor);
 				Config.nodeTexture = texture;
+
+
+				editor.storage.init( function () {
+
+					var signals = editor.signals;
+					editor.storage.get( function ( state ) {
+				
+						if ( state !== undefined ) {
+							// editor.fromJSON( state );
+							console.log(state);
+							editor.fileLoader.loadSavedProgress( JSON.parse(state) ); 
+						}
+					
+					} );		
+
+					var timeout;
+					function saveState( scene ) {
+			
+						clearTimeout( timeout );
+						timeout = setTimeout( function () {
+							// editor.signals.savingStarted.dispatch();
+							timeout = setTimeout( function () {
+
+								if(editor.currGame != ''){
+
+									var graphContents = editor.graph.toCsv();
+									graphContents.linkAddedable = editor.linkAddedable;
+									graphContents.nodeMoveable = editor.nodeMoveable;
+									graphContents.currGame = editor.currGame;
+
+									
+									editor.storage.set(JSON.stringify(graphContents) );
+								}
+								// editor.signals.savingFinished.dispatch();
+							}, 100 );
+						}, 1000 );
+					};
+				
+				signals.saveProgress.add( saveState );
+				// signals.objectAdded.add( saveState );
+			} );
 				
 				document.addEventListener( 'keydown', function ( event ) {
 
@@ -127,7 +170,7 @@
 					
 					var parent = object.parent;
 					if ( parent !== null && object.name == 'node') editor.execute( new DeleteNodeCommand( object ) );
-					if ( parent !== null && object.name == 'edge') editor.execute( new DeleteEdgeCommand( object ) );
+					if ( parent !== null && object.name == 'link') editor.execute( new DeleteEdgeCommand( object ) );
 					break;
 
 			

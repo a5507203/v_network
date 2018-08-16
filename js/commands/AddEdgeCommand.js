@@ -6,7 +6,7 @@ var AddEdgeCommand = function ( object ) {
 
 	this.object = object;
 	if ( object !== undefined ) {
-		this.name = 'Add New Edge';
+		this.name = 'Add New Link';
 	}
 
 };

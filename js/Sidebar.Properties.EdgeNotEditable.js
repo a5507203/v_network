@@ -1,4 +1,4 @@
-Sidebar.Properties.edgeNotEditable = function ( editor, object ) {
+Sidebar.Properties.linkNotEditable = function ( editor, object ) {
 
 	var signals = editor.signals;
 	var container = new UI.Row();

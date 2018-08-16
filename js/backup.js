@@ -12,9 +12,8 @@ var NetworkVisualization = function ( editor ) {
     this.nodesContainer = editor.nodesContainer;
     this.edgesContainer = editor.edgesContainer;
     this.flowsContainer = editor.flowsContainer;
-    this.setPathVisible( this.flowsContainer, false );
     this.tripsContainer = editor.tripsContainer;
-    this.setPathVisible( this.tripsContainer, false );
+
 
 
 
@@ -660,7 +659,6 @@ NetworkVisualization.prototype = {
 
             var material = new MeshLineMaterial({color:new THREE.Color(0xff0000),sizeAttenuation:true,lineWidth: trips.lineWidth, transparent:true, opacity:trips.opacity});
             var tripsObject = new THREE.Mesh( row.geometry, material );
-
    
             this.tripsContainer.add(tripsObject);
         }

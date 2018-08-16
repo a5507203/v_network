@@ -10,10 +10,10 @@ var NetworkVisualization = function ( editor ) {
     this.nodesContainer = editor.nodesContainer;
     this.edgesContainer = editor.edgesContainer;
     this.flowsContainer = editor.flowsContainer;
-    this.setPathVisible( this.flowsContainer, false );
-    this.tripsContainer = editor.tripsContainer;
-    this.setPathVisible( this.tripsContainer, false );
 
+    this.tripsContainer = editor.tripsContainer;
+    
+   
 
 
 
@@ -25,6 +25,7 @@ var NetworkVisualization = function ( editor ) {
         scope.graph.cleanFlows();
         scope.readFlowsFromRawDataString(flows);
         scope.renderFlows();
+        scope.renderTrips();
         scope.signals.rendererChanged.dispatch();
 
 
@@ -32,8 +33,13 @@ var NetworkVisualization = function ( editor ) {
 
     this.signals.networkElementDisplayChanged.add( function ( type, show ) {
         if (type == 0 )  scope.setPathVisible(scope.edgesContainer, show);
-        if (type == 1 )  scope.setPathVisible(scope.flowsContainer, show);
-        if (type == 2 )  scope.setPathVisible(scope.tripsContainer, show);
+        if (type == 1 )  {
+            editor.trafficFlow = show;
+        }
+        if (type == 2 )  {
+	        editor.desireLines = show;
+            scope.setPathVisible(scope.tripsContainer, show);
+        }
 		scope.signals.rendererChanged.dispatch();
 
 	} );
@@ -401,10 +407,10 @@ NetworkVisualization.prototype = {
             this.renderNode( node );
             this.renderEdges( node );
             // this.renderFlows( node );
-            this.renderTrips( node );
+            // this.renderTrips( node );
             
         }   
-
+        this.renderTrips( );
         //this.setLabelsVisible(this.edgesContainer, false );
 
         this.signals.rendererChanged.dispatch();
@@ -416,7 +422,9 @@ NetworkVisualization.prototype = {
         var material = new THREE.MeshBasicMaterial( {color: 0xff0000, transparent: true, opacity: 1, map: Config.nodeTexture, alphaTest: 0.2} );
         var nodeObject = new THREE.Mesh( geometry, material );
         nodeObject.position.set(node.coordinate.x,node.coordinate.y, 0 );
-        this.nodesContainer.add(nodeObject);  
+        this.nodesContainer.add(nodeObject);
+        // this.flowNodeContainer.add(nodeObject.clone());
+        // this.tripNodeContainer.add(nodeObject.clone());
 
         var nodeNameLabel = new THREE.TextSprite({
             textSize: 1.5,
@@ -441,8 +449,34 @@ NetworkVisualization.prototype = {
           
 
     },
+    createLabel:function(name){
+        var nodeNameLabel = new THREE.TextSprite({
+            textSize: 1.5,
+            redrawInterval: 0,
+            texture: {
+              text: name,
+              fontFamily: 'Arial',
+            },
+            material: {
+              color: 0xFFFFFF,
+              fog: false,
+              transparent: true
+            },
+        });
+        return nodeNameLabel;
 
+    },
 
+    cloneNodes : function( source, dist ){
+        dist.children = [];
+        for(var node of source.children){
+            var newNode = node.clone();
+            // console.log(node.children[0]);
+            newNode.add(this.createLabel(node.graphElement.name));
+            dist.add(newNode);
+            // break;
+        }
+    },
 
     changeEdgePosition : function( edge, startPosition, endPosition, realStartPos, realEndPos ) {
         
@@ -507,9 +541,11 @@ NetworkVisualization.prototype = {
     createEdgeObject: function ( startNode ,endNode, color, edge, scalar) {
         var key = endNode.uuid;
 
-        var lineWidth = edge.lineWidth;
+        // var lineWidth = edge.lineWidth;
+        var lineWidth = 0.2;
 
         var capacity = edge.capacity;
+        color = new THREE.Color(Colors[Object.keys(Colors)[Config.roadType[edge.capacity]]]);
         // init start and end position of edge and create edge
         var startPos = new THREE.Vector3( startNode.coordinate.x, startNode.coordinate.y, 0 );
         var endPos = new THREE.Vector3( endNode.coordinate.x, endNode.coordinate.y, 0 );
@@ -542,11 +578,11 @@ NetworkVisualization.prototype = {
         var row = new MeshLine();
         row.setGeometry( geometry );
         //var lineColor = new THREE.Color(color);
-        var material = new MeshLineMaterial({color:color,sizeAttenuation:true,lineWidth:lineWidth, transparent:true, opacity:0.5});
+        var material = new MeshLineMaterial({color:color,sizeAttenuation:true,lineWidth:lineWidth, transparent:false, opacity:1});
           
         var edgeObject = new THREE.MeshLine(row.geometry, material);
         edgeObject.color = color;
-        edgeObject.name = 'edge';
+        edgeObject.name = 'link';
         edgeObject.scalar = scalar;
 
         // add arrow to indicate the direction
@@ -555,6 +591,7 @@ NetworkVisualization.prototype = {
         edgeObject.add(arrow);
         edgeObject.type = 0;
         edgeObject.graphElement = edge;
+
         edgeObject.from = startNode.uuid;
         edgeObject.to = key;
         return edgeObject;
@@ -566,6 +603,10 @@ NetworkVisualization.prototype = {
 
     renderFlows: function (  ) {
         this.flowsContainer.children = [];
+        this.cloneNodes(this.nodesContainer,this.flowsContainer);
+        // editor.flowScene.children[2] = this.nodesContainer.clone();
+        // console.log(editor.flowScene)
+        // console.log(this.flowNodesContainer);
         for ( let node of Object.values(this.graph.nodes) ) {
             for( let [key,flows] of Object.entries( node.flows )) {
                 for( var i = 0; i< flows.length ; i += 1) {
@@ -580,7 +621,6 @@ NetworkVisualization.prototype = {
                     endPos.addVectors( endPos, perpendicularVector );
                     startPos.addVectors( startPos, perpendicularVector);
                     
-
                     var distance = startPos.distanceTo( endPos );
 
                     var middlePoint = new THREE.Vector3().addVectors( endPos, startPos ).multiplyScalar(0.5);
@@ -598,44 +638,48 @@ NetworkVisualization.prototype = {
                     var row = new MeshLine();
                     row.setGeometry( geometry );
 
-
-                    var material = new MeshLineMaterial({color:new THREE.Color(flow.lineColor),sizeAttenuation:true,lineWidth: node.edges[key][i].lineWidth, transparent:false, opacity:1});
+                    var material = new MeshLineMaterial({color:new THREE.Color(flow.lineColor),sizeAttenuation:true,lineWidth: 0.2, transparent:false, opacity:1});
                     var flowsObject = new THREE.Mesh( row.geometry, material );
                     //add arrow to indicate the direction
                     var arrow = this.renderArrow( arrowDirection, arrowPosition ); 
                     flowsObject.add(arrow);
                 
-                    //var capcityLabel = this.renderPathLabel( startPos, endPos, perpendicularVector, node.edges[key].capacity );
-                // flows.add(capcityLabel)
                     this.flowsContainer.add(flowsObject);
                 }
             }
         }
     },
 
-    renderTrips: function ( node ) {
+    renderTrips: function (  ) {
 
+        this.tripsContainer.children = [];
+        this.cloneNodes(this.nodesContainer, this.tripsContainer);
+        for ( let [key,node] of Object.entries(this.graph.nodes) ) {
+           
+          
+            console.log('adffadf');
+         
 
-        for( let [endNode,trips] of Object.entries( node.trips )) {
-  
-            // init start and end position of trip
-            var startPos = new THREE.Vector3( node.coordinate.x, node.coordinate.y, 0 );
-            var endPos = new THREE.Vector3( this.graph.nodes[endNode].coordinate.x, this.graph.nodes[endNode].coordinate.y, 0 );
-
+            for( let [endNode,trips] of Object.entries( node.trips )) {
     
-            // break
-            var geometry = new THREE.Geometry();
-            geometry.vertices.push( startPos );
-            geometry.vertices.push( endPos );
-            // create a row object to indicate trip
-            var row = new MeshLine();
-            row.setGeometry( geometry );
+                // init start and end position of trip
+                var startPos = new THREE.Vector3( node.coordinate.x, node.coordinate.y, 0 );
+                var endPos = new THREE.Vector3( this.graph.nodes[endNode].coordinate.x, this.graph.nodes[endNode].coordinate.y, 0 );
 
-            var material = new MeshLineMaterial({color:new THREE.Color(0xff0000),sizeAttenuation:true,lineWidth: trips.lineWidth, transparent:true, opacity:trips.opacity});
-            var tripsObject = new THREE.Mesh( row.geometry, material );
+                // break
+                var geometry = new THREE.Geometry();
+                geometry.vertices.push( startPos );
+                geometry.vertices.push( endPos );
+                // create a row object to indicate trip
+                var row = new MeshLine();
+                row.setGeometry( geometry );
 
-   
-            this.tripsContainer.add(tripsObject);
+                var material = new MeshLineMaterial({color:new THREE.Color(0xff0000),sizeAttenuation:true,lineWidth: trips.lineWidth, transparent:true, opacity:trips.opacity});
+                var tripsObject = new THREE.Mesh( row.geometry, material );
+
+                this.tripsContainer.add(tripsObject);
+            }
+
         }
 
     },

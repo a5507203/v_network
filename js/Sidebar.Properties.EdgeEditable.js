@@ -1,4 +1,4 @@
-Sidebar.Properties.edgeEditable = function ( editor, object ) {
+Sidebar.Properties.linkEditable = function ( editor, object ) {
 
 	var signals = editor.signals;
 	var container = new UI.Row();

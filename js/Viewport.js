@@ -11,17 +11,25 @@ var Viewport = function ( editor ) {
 	///container.add( new Viewport.Info( editor ) );
 
 	//
+
 	var nodePairs = [];
-	var renderer = new THREE.WebGLRenderer();
+
+
+	var renderer =  new THREE.WebGLRenderer(  );
+	renderer.setClearColor( 0xffffff, 1 );
+
 	renderer.autoClear = false;
-	renderer.autoUpdateScene = false;
-	renderer.setPixelRatio( window.devicePixelRatio );
+	// renderer.autoUpdateScene = false;
+	// renderer.setPixelRatio( window.devicePixelRatio );
 	renderer.setSize( container.dom.offsetWidth, container.dom.offsetHeight );
 	container.dom.appendChild( renderer.domElement );
 
 	var camera = editor.camera;
+	// scenes
 	var scene = editor.scene;
 	var sceneHelpers = editor.sceneHelpers;
+	var flowScene = editor.flowScene;
+	var tripScene = editor.tripScene;
 
 	var objects = editor.objects;
 
@@ -80,7 +88,7 @@ var Viewport = function ( editor ) {
 
 		}
 
-		//render();
+		//renderAll();
 
 	} );
 
@@ -169,7 +177,7 @@ var Viewport = function ( editor ) {
 
 			}
 
-			render();
+			renderAll();
 
 		}
 
@@ -258,7 +266,7 @@ var Viewport = function ( editor ) {
 	// signals.editorCleared.add( function () {
 
 	// 	controls.center.set( 0, 0, 0 );
-	// 	render();
+	// 	renderAll();
 
 	// } );
 
@@ -284,7 +292,7 @@ var Viewport = function ( editor ) {
 			}
 
 			//TODO if (object.type != 0 && editor.mode != "AnimationMode" )
-			if (editor.mode != "AnimationMode" && object.name != 'edge' && editor.addNewEdgeMode == 0 )
+			if (editor.mode != "AnimationMode" && object.name != 'link' && editor.addNewEdgeMode == 0 )
 				transformControls.attach( object );
 			if ( editor.addNewEdgeMode == 1 ) {
 				if (nodePairs.length < 2 && object.name == 'node' ) {
@@ -299,7 +307,7 @@ var Viewport = function ( editor ) {
 
 		}
 
-		render();
+		renderAll();
 
 	} );
 
@@ -346,7 +354,7 @@ var Viewport = function ( editor ) {
 
 		// }
 
-		render();
+		renderAll();
 
 	} );
 	signals.modeChanged.add( function ( mode ) {
@@ -399,14 +407,14 @@ var Viewport = function ( editor ) {
 
 		renderer.setSize( container.dom.offsetWidth, container.dom.offsetHeight );
 
-		render();
+		renderAll();
 
 	} );
 
 	signals.showGridChanged.add( function ( showGrid ) {
 		console.log(showGrid);
 		grid.visible = showGrid;
-		render();
+		renderAll();
 
 	} );
 
@@ -414,28 +422,51 @@ var Viewport = function ( editor ) {
 
 	signals.rendererChanged.add( function ( ) {
 
-		render();
+		renderAll();
 
 	} );
 
-
-
-
-
-	function render() {
+	function renderAll() {
 		//requestAnimationFrame(animate);
 	//	console.log("renders")
-		sceneHelpers.updateMatrixWorld();
-		scene.updateMatrixWorld();
-		//console.log(editor.camera);
-		renderer.render( scene, editor.camera);
 
-		//if ( renderer instanceof THREE.RaytracingRenderer === false ) {
+		renderer.setClearColor( 0xffffff );
+		renderer.setScissorTest( false );
+		renderer.clear();
+		renderer.setClearColor( 0xe0e0e0 );
+		renderer.setScissorTest( true );
 
-		renderer.render( sceneHelpers,  editor.camera );
+		var rect = container.dom.getBoundingClientRect();
 
-		//}
+		render( rect, scene);
+		render( rect, sceneHelpers);
+
+		if(editor.trafficFlow) render( rect, flowScene);
+
+		if(editor.desireLines) render( rect, tripScene);
 
 	}
+
+	function render(rect, scene){
+
+		scene.updateMatrixWorld();
+
+		var userData = scene.userData;
+		var camera = userData.camera;
+
+		var left   = Math.floor( rect.width  * userData.left );
+		var top    = Math.floor( rect.height  * userData.top );
+		var width  = Math.floor( rect.width  * userData.width );
+		var height = Math.floor( rect.height * userData.height );
+
+		camera.aspect = width / height;
+		camera.updateProjectionMatrix();
+		renderer.setViewport( left, top, width, height );
+		renderer.setScissor( left, top, width, height );
+
+		renderer.render( scene, camera  );
+	}
+
+
 
 };

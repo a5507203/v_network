@@ -9,10 +9,15 @@ var Editor = function (  ) {
 	this.currGame = '';
 	var Signal = signals.Signal;
 	this.linkAddable = 0;
+	this.nodeMoveable = 0;
+	this.trafficFlow = false;
+	this.desireLines = false;
+	
 
 	this.signals = {
-
+		loadGameName: new Signal(),
 		editorCleared: new Signal(),
+		saveProgress:new Signal(),
 		savingStarted: new Signal(),
 		savingFinished: new Signal(),
 		loadDataUrl: new Signal(),	
@@ -44,16 +49,61 @@ var Editor = function (  ) {
 		lineWidthChanged: new Signal(),
 		isAdmin: new Signal(),
 		publishGraph: new Signal(),
-		edgeAddedable:new Signal()
+		edgeNodeOption:new Signal()
 		
 	};
 
 	this.camera = this.DEFAULT_CAMERA.clone();
 	
 	this.scene = new THREE.Scene();
-	this.scene.name = 'Scene';
+	this.scene.name = 'networkScene';
+	this.storage = new Storage();
+	this.scene.userData = {
+		left: 0,
+		top: 0,
+		width: 1,
+		height: 1
+	};
+	this.scene.userData.camera = this.camera;
+
+	
+
+	this.flowScene = new THREE.Scene();
+	this.flowScene.name = 'flowScene';
+	this.flowScene.userData = {
+		left: 0,
+		top: 0,
+		width: 0.3,
+		height: 0.5
+	};
+	this.flowScene.userData.camera = this.DEFAULT_CAMERA.clone();
+
+	this.flowScene.background = new THREE.Color( 0xCACACA);
+	this.flowScene.add(new THREE.AmbientLight( 0x404040 ));
+
+	// this.flowScene.add
+	this.tripScene = new THREE.Scene();
+	this.tripScene.name = 'tripScene';
+	this.tripScene.background = new THREE.Color( 0xBABABA );
+	this.tripScene.add(new THREE.AmbientLight( 0x404040 ));
+	this.tripScene.userData = {
+		left: 0,
+		top: 0.5,
+		width: 0.3,
+		height: 0.5
+	};
+	this.tripScene.userData.camera = this.DEFAULT_CAMERA.clone();
+
 	this.scene.background = new THREE.Color( 0xAAAAAA );
 	this.sceneHelpers = new THREE.Scene();
+	this.sceneHelpers.userData = {
+		left: 0,
+		top: 0,
+		width: 1,
+		height: 1
+	};
+	this.sceneHelpers.userData.camera = this.camera;
+
 	this.fileLoader = new FileLoader( this );
 	this.history = new History( this );
 	
@@ -72,11 +122,11 @@ var Editor = function (  ) {
 	
     this.flowsContainer = new THREE.Group();
     this.flowsContainer.position.set( 0, 0, 0.02 );
-    this.scene.add( this.flowsContainer );
+    this.flowScene.add( this.flowsContainer );
 
     this.tripsContainer = new THREE.Group();
     this.tripsContainer.position.set( 0, 0, 0.02 );
-    this.scene.add( this.tripsContainer );
+    this.tripScene.add( this.tripsContainer );
 	this.networkVisualization = new NetworkVisualization( this );
 
 };
@@ -244,7 +294,7 @@ Editor.prototype = {
 
 		if ( this.selected === object ) return;
 		
-		if(this.selected && this.selected.name == 'edge')
+		if(this.selected && this.selected.name == 'link')
 		//change the edge color back to normal on deselect
 		this.selected.material.uniforms.color.value = this.selected.color;
 		this.selected = object;
@@ -255,7 +305,7 @@ Editor.prototype = {
 
 	},
 	clear : function(){
-
+		this.storage.clear();
 		this.history.clear();
 		this.camera.copy( this.DEFAULT_CAMERA );
 		this.newEdgesDict = {};

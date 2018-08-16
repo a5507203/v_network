@@ -495,7 +495,7 @@
 
             // TODO
 
-            if( scope.object.name == 'edge' ) {
+            if( scope.object.name == 'link' ) {
                 worldPosition = new THREE.Vector3().addVectors( scope.object.position, scope.object.center );
       
             }else{

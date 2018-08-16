@@ -11,7 +11,7 @@ Menubar.File = function ( editor ) {
 
 	//
 	var postNetUrl = Config.host+'/networks';
-	var submitResultUrl = Config.host+'/scores';
+
 	var config = editor.config;
 
 	var container = new UI.Panel();
@@ -79,39 +79,26 @@ Menubar.File = function ( editor ) {
 		// zip.file("flows.csv", graphContents.flows);
 		zip.file("networks.csv", graphContents.edges);
 		zip.file("trips.csv", graphContents.trips);
+		zip.file('gameInfo.csv',editor.currGame);
+		
 		zip.generateAsync({type:"blob"})
 		.then(function(content) {
 			saveAs(content, "networks.zip");
 		});
-
 	} );
 	options.add( download );
 
-
-
-	//SUBMIT
-	var submit = new UI.Row();
-	submit.setClass( 'option' );
-	submit.setTextContent( 'Submit' );
-	submit.onClick( function () {
-		
-    	var graphContents = editor.graph.toCsv();
-        userInfo = JSON.parse(getCookie('userInfo'));
-     
-		var networkInfo = {
-			networkID: editor.currGame,
-			userID:userInfo.id,
-			nodes:graphContents.nodes,
-			links:graphContents.edges,
-			trips:graphContents.trips
-		};
-        httpPostAsync(submitResultUrl, networkInfo, function(res) {
-			signals.readFlows.dispatch(res.flows);
-			alert('congratulations, your score is '+ res.score);
-	
-        });
+	//SAVE PROGRESS
+	var save = new UI.Row();
+	save.setClass( 'option' );
+	save.setTextContent( 'Save' );
+	save.onClick( function () {
+		signals.saveProgress.dispatch();
 	} );
-	options.add( submit );
+	options.add( save );
+
+
+
 
 	// PUBLISH
     var popupContainer = document.createElement('div');
@@ -147,6 +134,7 @@ Menubar.File = function ( editor ) {
 	graphName.setAttribute('type','text');
     graphName.setAttribute('name','graphName');
     graphName.setAttribute('placeholder','Graph Name');
+
     publishForm.appendChild(graphName);
 
     var level = document.createElement('select');
@@ -164,6 +152,7 @@ Menubar.File = function ( editor ) {
 	difficult.value = 'difficult';
 	difficult.innerHTML = 'Difficult';
 	level.appendChild(difficult);
+	level.style.width = '100%';
     // level.setAttribute('type','text');
     // level.setAttribute('placeholder','Level');
     publishForm.appendChild(level);
@@ -176,10 +165,21 @@ Menubar.File = function ( editor ) {
 	//  <label for="scales">Scales</label>
 
 	var labelforlink = document.createElement('label');
-	labelforlink.innerHTML = 'Allow to add links';
+	labelforlink.innerHTML = 'add links';
 	labelforlink.setAttribute('for','linkButton');
 	publishForm.appendChild(labelforlink);
 	publishForm.appendChild(linkAddedableBox);
+
+	var nodeBox = document.createElement('input');
+	nodeBox.setAttribute('type','checkbox');
+	nodeBox.setAttribute('value','nodeButton');
+	nodeBox.setAttribute('name','nodeOption');
+
+	var labelforNode = document.createElement('label');
+	labelforNode.innerHTML = 'move nodes';
+	labelforNode.setAttribute('for','nodeButton');
+	publishForm.appendChild(labelforNode);
+	publishForm.appendChild(nodeBox);
 
 	var publishButtonGroup = document.createElement('div');
     publishButtonGroup.setAttribute('class','action_btns');
@@ -195,8 +195,12 @@ Menubar.File = function ( editor ) {
         userInfo = JSON.parse(getCookie('userInfo'));
         userId = userInfo.id;
 		var linkAddedable = 0; 
+		var nodeMoveable = 0; 
 		if (publishForm.elements.linkOption.checked) {
 			linkAddedable = 1;
+		}
+		if (publishForm.elements.nodeOption.checked) {
+			nodeMoveable = 1;
 		}
 		var networkInfo = {
 			networkName: publishForm.elements.graphName.value,
@@ -204,6 +208,7 @@ Menubar.File = function ( editor ) {
 			nodes:graphContents.nodes,
 			links:graphContents.edges,
 			linkAddedable:linkAddedable,
+			nodeMoveable:nodeMoveable,
 			trips:graphContents.trips,
 			level: publishForm.elements.level.value
 		};
@@ -241,6 +246,7 @@ Menubar.File = function ( editor ) {
 	options.add( publish );
 
 	signals.isAdmin.add(function(bool){
+		console.log(bool);
 		if(bool) publish.setDisplay( '' );
 		else publish.setDisplay( 'none' );
 		
