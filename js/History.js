@@ -53,7 +53,8 @@ History.prototype = {
 			lastCmd.update( cmd );
 			cmd = lastCmd;
 
-		} else if ( isUpdatableCmd && timeDifference < 500 ) {
+		} else if ( isUpdatableCmd && timeDifference < 1000 ) {
+			console.log('updating');
 
 			lastCmd.update( cmd );
 			cmd = lastCmd;

@@ -241,4 +241,9 @@ function getCookie(c_name) {
     return "";
 }
 
+function getUserInfo(){
+  return  JSON.parse(getCookie('userInfo'));
+
+}
+
 

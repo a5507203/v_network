@@ -47,6 +47,7 @@ var Editor = function (  ) {
 		historyChanged: new Signal(),
 		refreshSidebarObjectProperties: new Signal(),
 		lineWidthChanged: new Signal(),
+		lineTypeChanged: new Signal(),
 		isAdmin: new Signal(),
 		publishGraph: new Signal(),
 		edgeNodeOption:new Signal()
@@ -140,7 +141,8 @@ Editor.prototype = {
 		this.signals.rendererChanged.dispatch();
 	},
 
-	setNodePosition: function( object, newPosition , newNetworkPosition){
+	setNodePosition: function( object, newPosition, newNetworkPosition){
+		console.log(newPosition);
 		object.position.copy( newPosition );
 		object.graphElement.orginalCoordinate.copy(newNetworkPosition);
     	object.graphElement.coordinate.set(newPosition.x,newPosition.y);
@@ -224,22 +226,42 @@ Editor.prototype = {
 
 	},
 
-	setEdgeType: function ( edge, capacity ){
-	
-		edge.graphElement.type = Config.roadType[capacity];
-		edge.graphElement.modifiedCapacity = capacity;
+	addOrRemoveEdgeObjectToInvoice:function(edgeObject){
+		var edge = edgeObject.graphElement;
+		if( (edge.modifiedType != edge.type || edge.modifiedNumberOfLanes != edge.numberOfLanes || edge.length != edge.modifiedLength ) && !this.newEdgesDict.hasOwnProperty(edge.uuid) ) {
+			this.newEdgesDict[edgeObject.uuid] = edgeObject;
+		}
+		else if(this.newEdgesDict.hasOwnProperty(edge.uuid) && edge.modifiedType == edge.type && edge.modifiedNumberOfLanes == edge.numberOfLanes && edge.length == modifiedLength  ){
+			delete this.newEdgesDict[edge.uuid];
+		}
+	},
 
-		if( edge.graphElement.capacity != edge.graphElement.modifiedCapacity && !this.newEdgesDict.hasOwnProperty(edge.uuid) ) {
+	setEdgeType: function ( edge, roadTypeName, numberOfLanes ){
+		
+		var graphElement = edge.graphElement;
+		graphElement.modifiedType = roadTypeName;
+		graphElement.modifiedNumberOfLanes = numberOfLanes;
+
+		if( (graphElement.modifiedType != graphElement.type || graphElement.modifiedNumberOfLanes != graphElement.numberOfLanes) && !this.newEdgesDict.hasOwnProperty(edge.uuid) ) {
 			this.newEdgesDict[edge.uuid] = edge;
 		}
-		else if(this.newEdgesDict.hasOwnProperty(edge.uuid) && edge.graphElement.capacity == edge.graphElement.modifiedCapacity  ){
-	
+		else if(this.newEdgesDict.hasOwnProperty(edge.uuid) && graphElement.modifiedType == graphElement.type && graphElement.modifiedNumberOfLanes == graphElement.numberOfLanes  ){
 			delete this.newEdgesDict[edge.uuid];
-
 		}
-		edge.graphElement.lineWidth = calculateLineWidth(capacity);
-		//this.signals.refreshSidebarObjectProperties.dispatch( edge );
-		this.signals.lineWidthChanged.dispatch( edge );
+		this.signals.lineTypeChanged.dispatch(edge);
+	},
+
+	setLaneNumber: function ( edge, numberOfLanes ){
+		
+		var graphElement = edge.graphElement;
+		graphElement.modifiedNumberOfLanes = numberOfLanes;
+		if( graphElement.modifiedNumberOfLanes != graphElement.numberOfLanes && !this.newEdgesDict.hasOwnProperty(edge.uuid) ) {
+			this.newEdgesDict[edge.uuid] = edge;
+		}
+		else if(this.newEdgesDict.hasOwnProperty(edge.uuid) && graphElement.modifiedType == graphElement.type && graphElement.modifiedNumberOfLanes == graphElement.numberOfLanes  ){
+			delete this.newEdgesDict[edge.uuid];
+		}
+		this.signals.lineTypeChanged.dispatch(edge);
 	},
 
 	selectById: function ( id ) {
@@ -293,10 +315,10 @@ Editor.prototype = {
 	select: function ( object ) {
 
 		if ( this.selected === object ) return;
-		
-		if(this.selected && this.selected.name == 'link')
 		//change the edge color back to normal on deselect
-		this.selected.material.uniforms.color.value = this.selected.color;
+		if(this.selected && this.selected.name == 'link'){
+			this.selected.material.uniforms.color.value = this.selected.color;
+		}
 		this.selected = object;
 		// if(object && object.name == 'node')
 		// 	this.signals.updateEdges.dispatch( object );

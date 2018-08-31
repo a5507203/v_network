@@ -1,3 +1,25 @@
+var RoadType = function (name,capacity,speed,minLanes,maxLanes,constructionCost,laneAddingCost,upgradeCost,colorIndex){
+    
+    this.capacity = capacity;
+    this.speed = speed;
+    this.minLanes = minLanes;
+    this.maxLanes = maxLanes;
+    this.constructionCost = constructionCost;
+    this.laneAddingCost = laneAddingCost;
+    this.upgradeCost = upgradeCost;
+    this.colorIndex = colorIndex;
+    this.name = name;
+
+};
+
+RoadType.prototype = {
+    toCsv: function ( index ) {
+        return index+','+this.name + ',' + this.capacity + ',' + 
+        this.speed + ',' + this.minLanes +',' + this.maxLanes + ',' + this.constructionCost + ',' +
+        this.laneAddingCost +  ',' + this.upgradeCost + '\n';
+    }
+};
+
 var Node = function (uuid, name) {
     this.uuid = uuid;
     this.name = name;
@@ -55,28 +77,39 @@ Node.prototype = {
 
 };
 
-var Edge = function( lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type, modifiedCapacity ) {
+var Edge = function( lineWidth, length, b, power, toll, numberOfLanes, type, modifiedType, modifiedNumberOfLanes,modifiedLength ) {
     this.lineWidth = lineWidth;
-    this.capacity = capacity;
     this.length = length; 
-    this.freeFlowTime = freeFlowTime; 
+    this.numberOfLanes = numberOfLanes;
     this.b = b; 
     this.power = power; 
-    this.speedLimit = speedLimit; 
     this.toll = toll; 
     this.type = type;
-    if( modifiedCapacity )
-        this.modifiedCapacity = modifiedCapacity;
+
+    if( modifiedLength )
+        this.modifiedLength = modifiedLength;
     else
-        this.modifiedCapacity = capacity;
+        this.modifiedLength = length;
+
+    if( modifiedType )
+        this.modifiedType = modifiedType;
+    else
+        this.modifiedType = type;
+
+    if( modifiedNumberOfLanes )
+        this.modifiedNumberOfLanes = modifiedNumberOfLanes;
+    else
+        this.modifiedNumberOfLanes = numberOfLanes;
 };
 
 Edge.prototype = {
-    //Init node,Term node,Capacity,Length,Free Flow Time,B,Power,Speed limit,Toll,Type
+    //Init node,Term node,Length (km),B,Power,Toll,Number of lanes,Road type,Speed limit,Capacity,Free flow time
     toCsv: function(startNode, endNode){
-        return startNode + ',' + endNode+',' + this.modifiedCapacity + ',' + 
-        this.length + ',' + this.freeFlowTime +',' + this.b + ',' + this.power + ',' +
-        this.speedLimit +  ',' + this.toll +',' + this.type + '\n';
+
+        var speedLimit = Config.roadTypes[this.modifiedType].speed;
+        return startNode + ',' + endNode+ ',' + 
+        this.modifiedLength + ',' + this.b + ',' + this.power + ',' + this.toll + ',' + this.modifiedNumberOfLanes + ',' +
+        this.modifiedType + ',' + speedLimit + ',' + getCapacity(this.modifiedType, this.modifiedNumberOfLanes) +  ',' + this.modifiedLength/speedLimit +'\n';
     }
     
 };
@@ -113,6 +146,7 @@ Trip.prototype = {
 
 var Graph = function Graph() {
     this.nodes = {};
+
 };
   
  
@@ -176,11 +210,11 @@ Graph.prototype = {
 
     },
    // "Init node ", "Term node ", "Capacity ", "Length ", "Free Flow Time ", "B", "Power", "Speed limit ", "Toll ", "Type"
-    createAndAddEdgeByNodeName : function ( startNodeName, endNodeName, lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type ) {
+    createAndAddEdgeByNodeName : function ( startNodeName, endNodeName, lineWidth, length, b, power, toll, numberOfLanes, type ) {
         var start = this.findUUIDbyNodeName ( startNodeName );
         var end = this.findUUIDbyNodeName ( endNodeName );
      
-        this.addEdge(start,end,new Edge( lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type ));
+        this.addEdge(start,end,new Edge( lineWidth, length, b, power, toll, numberOfLanes, type ));
 
     },
 
@@ -198,12 +232,12 @@ Graph.prototype = {
         return null;
     },
 
-    createEdge : function ( start, end, lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type, modifiedCapacity ) {
+    createEdge : function ( start, end, lineWidth, length, b, power, toll, numberOfLanes, type ) {
 
         if ( !this.nodes[start] || !this.nodes[end] ) return;
         if (this.nodes[start].edges[end] == undefined) scalar = 0;
         else scalar = this.nodes[start].edges[end].length;
-        return {edge:new Edge( lineWidth, capacity, length, freeFlowTime, b, power, speedLimit, toll, type, modifiedCapacity ),scalar:scalar};
+        return {edge:new Edge( lineWidth, length, b, power, toll, numberOfLanes, type ),scalar:scalar};
 
     },
 
@@ -283,10 +317,11 @@ Graph.prototype = {
     toCsv : function( ) {
         console.log(this.nodes);
         var nodesString = 'Node,X,Y\n';
-        var edgesString = 'Init node,Term node,Capacity,Length,Free Flow Time,B,Power,Speed limit,Toll,Type\n';
+        var edgesString = 'Init node,Term node,Length (km),B,Power,Toll,Number of lanes,Road type,Speed limit,Capacity,Free flow time\n';
         // var flowsString = '\n\n\n\n\nTail,Head,Volume,Cost\n';
+        var roadTypesString = 'Road type,Capacity,Speed,Min number of lanes,Max number of lanes,Construction cost ($/km),Lane adding cost ($/km),Upgrade cost($/km/ln)\n';
 
-     
+
         var sortedNodeIdNamePairs = sortObject(this.nodes, 'name', true);
     
         var nodesIdList = sortedNodeIdNamePairs.map(([uuid,name])=>  uuid);
@@ -307,12 +342,16 @@ Graph.prototype = {
             //     edge.toCsv(this.nodes)
             // }
         }
-        
-        // // console.log(flowsString);
-        console.log(tripsString);
+        // //
+        // console.log(Config.roadTypes)
+        for ( let [index,roadType] of Object.entries(Config.roadTypes)) {
+            console.log(index);
+            roadTypesString += roadType.toCsv(index);
+        }
         return {
             nodes:nodesString,
             edges:edgesString,
+            roadTypes: roadTypesString,
             // flows:flowsString,
             trips:tripsString
         };

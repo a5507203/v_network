@@ -3,7 +3,7 @@ var SetNameCommand = function ( object, newName ) {
 	Command.call( this );
 
 	this.type = 'SetNameCommand';
-	this.name = 'Set name ' + newName;
+	this.name = 'Set node name from '+ object.graphElement.name + ' to ' + newName;
 	// this.updatable = true;
 
 	this.object = object;

@@ -47,7 +47,7 @@ Sidebar.Properties.nodeEditable = function ( editor, object ) {
 			
 			if ( object.position.distanceTo(  newPosition ) >= 0.01 ) {
 				console.log('setSuccess');
-				editor.execute( new SetPositionCommand( object, newPosition, new THREE.Vector2(objectPositionX.getValue(),objectPositionY.getValue() ) ) );
+				editor.execute( new SetPositionCommand( object, newPosition));
 
 			}
 		}

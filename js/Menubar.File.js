@@ -74,9 +74,9 @@ Menubar.File = function ( editor ) {
 		var zip = new JSZip();
 
 		var graphContents = editor.graph.toCsv();
+		console.log(graphContents);
 		zip.file("nodes.csv", graphContents.nodes);
-		//TODO TAKE OUT THE FLOW.CSV
-		// zip.file("flows.csv", graphContents.flows);
+		if( getUserInfo().isAdmin ) zip.file("roadTypes.csv", graphContents.roadTypes);
 		zip.file("networks.csv", graphContents.edges);
 		zip.file("trips.csv", graphContents.trips);
 		zip.file('gameInfo.csv',editor.currGame);
@@ -192,7 +192,7 @@ Menubar.File = function ( editor ) {
 	publishForm.onsubmit = function(e){
 		e.preventDefault();
     	var graphContents = editor.graph.toCsv();
-        userInfo = JSON.parse(getCookie('userInfo'));
+        userInfo = getUserInfo();
         userId = userInfo.id;
 		var linkAddedable = 0; 
 		var nodeMoveable = 0; 
@@ -210,6 +210,7 @@ Menubar.File = function ( editor ) {
 			linkAddedable:linkAddedable,
 			nodeMoveable:nodeMoveable,
 			trips:graphContents.trips,
+			roadTypes:graphContents.roadTypes,
 			level: publishForm.elements.level.value
 		};
         httpPostAsync(postNetUrl, networkInfo, function(res) {

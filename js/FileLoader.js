@@ -4,7 +4,8 @@ FileLoader = function ( editor ) {
     this.EDGEFILENAME = 'networks.csv';
     this.NODEFILENAME = 'nodes.csv'; 
     this.TRIPFILENAME = 'trips.csv';
-    this.GAMEINFOFILE = 'gameInfo.csv';
+    this.GAMEINFOFILENAME = 'gameInfo.csv';
+    this.ROADTYPEFILENAME = 'roadTypes.csv';
     var scope = this;
     var signals = this.signals = editor.signals;
     var reader = this.reader = new FileReader();
@@ -36,33 +37,51 @@ FileLoader.prototype = {
                     count += 1;
                     checkCompete();
 				});
+
                 zip.files[scope.EDGEFILENAME].async('string').then(function (fileData) {
                     dataDict.edges = fileData;
                     count += 1;
                     checkCompete();
                 });
 
-
                 zip.files[scope.TRIPFILENAME].async('string').then(function (fileData) {
                     dataDict.trips = fileData;
                     count += 1;
-    
                     checkCompete();
                 });
-                
-                if(!zip.files[scope.GAMEINFOFILE]){
+
+                // if(!zip.files[scope.ROADTYPEFILENAME] ){
+             
+                // }else{
+                //     zip.files[scope.ROADTYPEFILENAME].async('string').then(function (fileData) {
+                //     dataDict.roadTypes = fileData;
+                //     count += 1;
+                //     checkCompete();
+                //     });
+                // }
+
+                if(!zip.files[scope.GAMEINFOFILENAME]){
                     count += 1;
                 }else{
-                    zip.files[scope.GAMEINFOFILE].async('string').then(function (fileData) {
-                    
+                    zip.files[scope.GAMEINFOFILENAME].async('string').then(function (fileData) {
                         if(fileData != '') scope.signals.loadGameName.dispatch(fileData);
                         count += 1;
                         checkCompete();
                     });
                 }
             });
+            scope.signals.loadGameName.add(function(currGame){
+                httpGetAsync(Config.host+'/networks/'+currGame, function(network){
+                    console.log('asdfas');
+                    dataDict.roadTypes = network.roadTypes;
+                    count += 1;
+                    checkCompete();
+                
+                });
+                
+            });
             function checkCompete (){
-                if(count == 4 ) {
+                if(count == 5 ) {
                     console.log(dataDict);
                     editor.networkVisualization.readGraphFromString(dataDict);
                 }
@@ -75,12 +94,14 @@ FileLoader.prototype = {
     loadDataUrl: function( url ){
         var scope = this;
         httpGetAsync(url, function(network){
+            console.log(network);
             var dataDict = {};
             dataDict.nodes = network.nodes;
             dataDict.edges = network.links;
             // dataDict.flows = network.flows;
         
             dataDict.trips = network.trips;
+            dataDict.roadTypes = network.roadTypes;
             editor.linkAddable = network.linkAddedable;
             editor.nodeMoveable = network.nodeMoveable;
 

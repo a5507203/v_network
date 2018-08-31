@@ -8,17 +8,16 @@ Sidebar.Invoice = function ( editor ) {
 	
 	container.add( new UI.Text( 'BUDGET' ) );
 
-
 	container.add( new UI.Break(), new UI.Break() );
 
 
 	// outliner
 
-	function buildOption(uuid, edge, draggable ) {
+	function buildOption(uuid, edgeObject, draggable ) {
 
 		var option = document.createElement( 'div' );
 		option.draggable = draggable;
-		option.innerHTML = buildHTML( edge );
+		option.innerHTML = buildHTML( edgeObject );
 		option.value = uuid;
 
 		return option;
@@ -26,17 +25,45 @@ Sidebar.Invoice = function ( editor ) {
 	}
 
 
-	function buildHTML( edge ) {
-		var deltaCapacity = (edge.graphElement.modifiedCapacity - edge.graphElement.capacity)*edge.graphElement.length/1000000;
-		if(deltaCapacity < 0) deltaCapacity = 0;
-		Config.totalLeft -= deltaCapacity; 
-		var html =  '&nbsp;Link&nbsp;from&nbsp;'+graph.nodes[edge.from].name + '&nbsp;to&nbsp;' + graph.nodes[edge.to].name + '&nbsp;with&nbsp;cost&nbsp;'+deltaCapacity;
+	function buildHTML( edgeObject ) {
+		var graphElement = edgeObject.graphElement;
+		// var deltaCapacity = ( getCapacity(graphElement.modifiedType,graphElement.modifiedNumberOfLanes)-getCapacity(graphElement.type,graphElement.numberOfLanes) )*graphElement.length/1000000;
+		var deltaCost = calculateCost(graphElement);
+		Config.totalLeft -= deltaCost; 
+		var html =  '&nbsp;Link&nbsp;from&nbsp;'+graph.nodes[edgeObject.from].name + '&nbsp;to&nbsp;' + graph.nodes[edgeObject.to].name + '&nbsp;with&nbsp;cost&nbsp;'+deltaCost;
 
 		return html;
 
 	}
 
+	function calculateCost(edge){
 
+		var deltaLanes = edge.modifiedNumberOfLanes - edge.numberOfLanes;
+		var currRoadType = Config.roadTypes[edge.modifiedType];
+		var upgradeCost = 0;
+		var roadLen = edge.length;
+		var modifiedRoadLen = edge.modifiedLength;
+		// TODO addLaneCost can be negative or not
+		var addLaneCost = (edge.modifiedNumberOfLanes - edge.numberOfLanes)*currRoadType.laneAddingCost*modifiedRoadLen;
+		var lengthChangeCost = (modifiedRoadLen-roadLen)*currRoadType.constructionCost;
+	
+		if(addLaneCost < 0 ) addLaneCost = 0;
+		if(lengthChangeCost < 0 ) lengthChangeCost = 0;
+		
+		if( edge.type == "none"){
+			upgradeCost = currRoadType.constructionCost*modifiedRoadLen;
+		}
+	
+		else if(edge.modifiedType != edge.type){
+
+			var prevRoadType = Config.roadTypes[edge.type];
+			upgradeCost = (currRoadType.constructionCost-prevRoadType.constructionCost)*roadLen;
+
+		}
+		
+
+		return Math.round10((addLaneCost+upgradeCost+lengthChangeCost),-2);
+	}
 
 	var outliner = new UI.Outliner( editor );
 	outliner.setId( 'outliner' );
@@ -68,10 +95,10 @@ Sidebar.Invoice = function ( editor ) {
 		var options = [];
 		var pad = 0;
 		Config.totalLeft = Config.maxLengthAdd;
-		console.log(newEdgesDict)
-		for ( let [uuid, edge] of Object.entries((newEdgesDict))) {
+	
+		for ( let [uuid, edgeObject] of Object.entries((newEdgesDict))) {
 		
-            var option = buildOption( uuid, edge, false );
+            var option = buildOption( uuid, edgeObject, false );
             option.style.paddingLeft = ( pad * 10 ) + 'px';
             options.push( option );
 		

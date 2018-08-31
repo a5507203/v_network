@@ -37,6 +37,7 @@
 		<script src="js/commands/SetPositionCommand.js"></script>
 		<script src="js/commands/SetNameCommand.js"></script>
 		<script src="js/commands/SetEdgeTypeCommand.js"></script>
+		<script src="js/commands/SetLaneNumberCommand.js"></script>
 		
 		<script src="js/Editor.js"></script>
 		<script src="js/FileLoader.js"></script>
@@ -104,7 +105,7 @@
 				
 						if ( state !== undefined ) {
 							// editor.fromJSON( state );
-							console.log(state);
+							// console.log(state);
 							editor.fileLoader.loadSavedProgress( JSON.parse(state) ); 
 						}
 					

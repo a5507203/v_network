@@ -1,1 +1,0 @@
-.\UE_FW.exe sf_tap_fw.tui

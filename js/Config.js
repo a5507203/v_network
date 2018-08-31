@@ -4,7 +4,7 @@ var Config = {
     newNodeCount : 0,
     newNodeColor : 0x2bdb89,
     newEdgeCount : 0,
-    roadType:{
+    roadTypes:{
 	},
     unitCost: 100,
     maxCapacity : 0,
