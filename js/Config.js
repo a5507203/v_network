@@ -9,8 +9,8 @@ var Config = {
     unitCost: 100,
     maxCapacity : 0,
     lineColor : new THREE.Color(0x0000ff),
-    maxLengthAdd: 100000,
-    totalLeft: 100000,
+    budget: 0,
+    totalLeft: 0,
     host:'http://13.237.82.173'
     // host:'http://localhost:3000'
 };

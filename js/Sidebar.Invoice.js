@@ -78,7 +78,7 @@ Sidebar.Invoice = function ( editor ) {
 	container.add( new UI.Break() );
 
     var totalLeftRow = new UI.Row();
-    var totalLeft = new UI.Text(Config.totalLeft);
+    var totalLeft = new UI.Text();
     
     totalLeftRow.add( new UI.Text( 'TOTAL LEFT:' ).setWidth( '90px' ) );
     totalLeftRow.add( totalLeft );
@@ -94,7 +94,7 @@ Sidebar.Invoice = function ( editor ) {
 
 		var options = [];
 		var pad = 0;
-		Config.totalLeft = Config.maxLengthAdd;
+		Config.totalLeft = Config.budget;
 	
 		for ( let [uuid, edgeObject] of Object.entries((newEdgesDict))) {
 		
@@ -109,7 +109,7 @@ Sidebar.Invoice = function ( editor ) {
 
 
 	}
-
+	signals.budgetChanged.add (refreshUI);
 	signals.historyChanged.add( refreshUI );
 	// signals.animationChanged.add( refreshUI );
 	// signals.editorCleared.add( refreshUI );

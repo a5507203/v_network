@@ -347,7 +347,10 @@ Graph.prototype = {
         for ( let [index,roadType] of Object.entries(Config.roadTypes)) {
             console.log(index);
             roadTypesString += roadType.toCsv(index);
+
+          
         }
+        roadTypesString = 'Budget,'+Config.budget+'\n'+roadTypesString;
         return {
             nodes:nodesString,
             edges:edgesString,

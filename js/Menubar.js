@@ -31,7 +31,8 @@ var Menubar = function ( editor ) {
 		};
         httpPostAsync(submitResultUrl, networkInfo, function(res) {
 			signals.readFlows.dispatch(res.flows);
-			alert('congratulations, your score is '+ res.score);
+			console.log(res.score);
+			alert('TSTT is changed by '+ Math.round10(parseFloat(res.score),-2));
 	
         });
 	} );

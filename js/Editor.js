@@ -50,8 +50,8 @@ var Editor = function (  ) {
 		lineTypeChanged: new Signal(),
 		isAdmin: new Signal(),
 		publishGraph: new Signal(),
-		edgeNodeOption:new Signal()
-		
+		edgeNodeOption:new Signal(),
+		budgetChanged:new Signal()
 	};
 
 	this.camera = this.DEFAULT_CAMERA.clone();

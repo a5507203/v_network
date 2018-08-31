@@ -194,8 +194,7 @@ NetworkVisualization.prototype = {
 
         var maxCapacity = 0;
         var rows = data.split( '\n' );
-        Config.budget = parseFloat(rows[0].trim().split(',')[1]);
-        this.signals.budgetChanged.dispatch();
+        Config.totalLeft = parseFloat(rows[0].trim().split(',')[1]);
         for ( var i = 2 ; i < rows.length ; i += 1 ) {
             var attribute = rows[i].trim().split( ',' );
             if (attribute.length < 9) continue;
