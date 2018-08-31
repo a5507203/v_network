@@ -30,7 +30,7 @@ FileLoader.prototype = {
             var count = 0;
             var zip = new JSZip( );
             var dataDict = {};
-        
+            var roadTypeFile = false;
             zip.loadAsync(contents).then(function (zip) {
                 zip.files[scope.NODEFILENAME].async('string').then(function (fileData) {
                     dataDict.nodes = fileData;
@@ -50,15 +50,16 @@ FileLoader.prototype = {
                     checkCompete();
                 });
 
-                // if(!zip.files[scope.ROADTYPEFILENAME] ){
+                if(!zip.files[scope.ROADTYPEFILENAME] ){
              
-                // }else{
-                //     zip.files[scope.ROADTYPEFILENAME].async('string').then(function (fileData) {
-                //     dataDict.roadTypes = fileData;
-                //     count += 1;
-                //     checkCompete();
-                //     });
-                // }
+                }else{
+                    roadTypeFile = true;
+                    zip.files[scope.ROADTYPEFILENAME].async('string').then(function (fileData) {
+                    dataDict.roadTypes = fileData;
+                    count += 1;
+                    checkCompete();
+                    });
+                }
 
                 if(!zip.files[scope.GAMEINFOFILENAME]){
                     count += 1;
@@ -71,6 +72,7 @@ FileLoader.prototype = {
                 }
             });
             scope.signals.loadGameName.add(function(currGame){
+                if(roadTypeFile == true) return;    
                 httpGetAsync(Config.host+'/networks/'+currGame, function(network){
                     console.log('asdfas');
                     dataDict.roadTypes = network.roadTypes;
