@@ -11,6 +11,6 @@ var Config = {
     lineColor : new THREE.Color(0x0000ff),
     maxLengthAdd: 100000,
     totalLeft: 100000,
-    // host:'http://52.63.197.231',
-    host:'http://localhost:3000'
+    host:'http://http://13.237.82.173'
+    // host:'http://localhost:3000'
 };
