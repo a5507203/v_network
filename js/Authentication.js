@@ -191,6 +191,7 @@ Authentication = function(editor) {
 
             setCookie('userInfo',JSON.stringify({id:res.data.user.id,isAdmin:res.data.user.isAdmin}),365);
             signals.userLogin.dispatch(true);
+            signals.isAdmin.dispatch(false);
             document.body.removeChild(popupContainer);
             
         });
