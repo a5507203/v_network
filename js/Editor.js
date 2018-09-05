@@ -13,6 +13,7 @@ var Editor = function (  ) {
 	this.trafficFlow = false;
 	this.desireLines = false;
 	
+	
 
 	this.signals = {
 		overBudget: new Signal(),
@@ -80,6 +81,7 @@ var Editor = function (  ) {
 		height: 0.5
 	};
 	this.flowScene.userData.camera = this.DEFAULT_CAMERA.clone();
+
 
 	this.flowScene.background = new THREE.Color( 0xCACACA);
 	this.flowScene.add(new THREE.AmbientLight( 0x404040 ));

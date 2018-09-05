@@ -94,6 +94,7 @@ var Viewport = function ( editor ) {
 
 	transformControls.addEventListener( 'mouseDown', function () {
 		
+		
 		var object = transformControls.object;
 
 		objectPositionOnDown = object.position.clone();
@@ -292,7 +293,7 @@ var Viewport = function ( editor ) {
 			}
 
 			//TODO if (object.type != 0 && editor.mode != "AnimationMode" )
-			if (editor.mode != "AnimationMode" && object.name != 'link' && editor.addNewEdgeMode == 0 )
+			if (editor.mode != "AnimationMode" && object.name != 'link' && editor.addNewEdgeMode == 0 && editor.nodeMoveable != 0)
 				transformControls.attach( object );
 			if ( editor.addNewEdgeMode == 1 ) {
 				if (nodePairs.length < 2 && object.name == 'node' ) {
