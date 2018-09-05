@@ -16,7 +16,10 @@ Authentication = function(editor) {
         signals.userLogin.dispatch(true);
     }
     signals.userLogin.add(function(bool){
-        if(bool) return;
+        if(bool) {
+            alert('welcome '+getUserInfo().username);
+            return;
+        }
         setCookie('userInfo','',0);
         body.appendChild(popupContainer);
     });
@@ -175,7 +178,7 @@ Authentication = function(editor) {
                 alert('invalid password');
             }
             else{
-                setCookie('userInfo',JSON.stringify({id:res.data.user.id,isAdmin:res.data.user.isAdmin}),365);
+                setCookie('userInfo',JSON.stringify({id:res.data.user.id,isAdmin:res.data.user.isAdmin,username:res.data.user.username}),365);
                 checkCookie();
                 signals.userLogin.dispatch(true);
                 document.body.removeChild(popupContainer);
@@ -189,7 +192,7 @@ Authentication = function(editor) {
         var registerInfo = { username:registerForm.elements.username.value, email:registerForm.elements.email.value, password: registerForm.elements.password.value } ;
          httpPostAsync(registerUrl, registerInfo, function(res) {
 
-            setCookie('userInfo',JSON.stringify({id:res.data.user.id,isAdmin:res.data.user.isAdmin}),365);
+            setCookie('userInfo',JSON.stringify({id:res.data.user.id,isAdmin:res.data.user.isAdmin,username:res.data.user.username}),365);
             signals.userLogin.dispatch(true);
             signals.isAdmin.dispatch(false);
             document.body.removeChild(popupContainer);

@@ -1,7 +1,7 @@
 Sidebar.Invoice = function ( editor ) {
 
 	var signals = editor.signals;
-    var newEdgesDict = editor.newEdgesDict;
+  
 	var graph = editor.graph;
 
 	var container = new UI.Panel();
@@ -68,7 +68,7 @@ Sidebar.Invoice = function ( editor ) {
 	var outliner = new UI.Outliner( editor );
 	outliner.setId( 'outliner' );
 	outliner.onChange( function () {
-		editor.select(newEdgesDict[outliner.getValue()]);
+		editor.select(editor.newEdgesDict[outliner.getValue()]);
 		//console.log( editor.animations.animations[outliner.getValue() ]);
 		
 
@@ -91,17 +91,24 @@ Sidebar.Invoice = function ( editor ) {
 	// refreshUI
 
 	function refreshUI() {
+		console.log('refresh budget')
 
 		var options = [];
 		var pad = 0;
 		Config.totalLeft = Config.budget;
 	
-		for ( let [uuid, edgeObject] of Object.entries((newEdgesDict))) {
-		
+		for ( let [uuid, edgeObject] of Object.entries((editor.newEdgesDict))) {
+			
             var option = buildOption( uuid, edgeObject, false );
             option.style.paddingLeft = ( pad * 10 ) + 'px';
             options.push( option );
 		
+		}
+
+		if(Config.totalLeft < 0){
+			editor.undo();
+			refreshUI();
+			alert('Over budget!');
 		}
 
 		outliner.setOptions( options );

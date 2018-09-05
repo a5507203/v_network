@@ -15,7 +15,9 @@ var Editor = function (  ) {
 	
 
 	this.signals = {
+		overBudget: new Signal(),
 		loadGameName: new Signal(),
+		clear: new Signal(),
 		editorCleared: new Signal(),
 		saveProgress:new Signal(),
 		savingStarted: new Signal(),
@@ -327,6 +329,7 @@ Editor.prototype = {
 
 	},
 	clear : function(){
+
 		this.storage.clear();
 		this.history.clear();
 		this.camera.copy( this.DEFAULT_CAMERA );
@@ -336,16 +339,15 @@ Editor.prototype = {
 		this.helpers = {};
 		this.selected = null;
 		this.graph.clear();
+		this.currGame = '';
 		this.removeObjects(this.edgesContainer);
 		this.removeObjects(this.nodesContainer);
 		this.removeObjects(this.flowsContainer);
 		this.removeObjects(this.tripsContainer);
 
-		Config.coordinateMean = 0;
-		Config.coordinateRange = 2000;
-		Config.newNodeCount  = 0;
-		Config.newEdgeCount = 0;
+		clearConfig();
 		console.log(this.scene);
+		this.signals.editorCleared.dispatch();
 		
 		// while ( .length > 0 ) {
 

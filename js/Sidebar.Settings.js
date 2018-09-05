@@ -23,23 +23,40 @@ Sidebar.Settings = function ( editor ) {
 	var newGameRow = new UI.Row();
 
 	
-    var newGameList = new UI.Select().setWidth( '250px' ).onChange( function() {
+    var newGameList = Config.newGameList = new UI.Select().setWidth( '250px' ).onChange( function() {
 		var currGame = newGameList.getValue();
-		editor.currGame = currGame;
-		console.log('getHere');
-		for ( var maxScoreRecord of maxScores){
-			if (maxScoreRecord._id.networkID == currGame) {
-				maxScore.setValue(maxScoreRecord.maxscore);
+		// editor.currGame = currGame;
+
+		var loadGame = function(){
+			editor.currGame = currGame;
+			newGameList.setValue(currGame);
+			for ( var maxScoreRecord of maxScores){
+				if (maxScoreRecord._id.networkID == currGame) {
+					maxScore.setValue(maxScoreRecord.maxscore);
+				}
 			}
-		}
-        signals.loadDataUrl.dispatch( avaiableNetworksUrl + '/'+ currGame );
+			signals.loadDataUrl.dispatch( avaiableNetworksUrl + '/'+ currGame );
+			signals.editorCleared.remove(loadGame);
+
+		};
+		
+		signals.editorCleared.add(loadGame);
+		signals.clear.dispatch();
+
 		// console.log(maxScores)
     } );
 
 	signals.loadGameName.add(function(currGame){
+		// if(editor.currGame != '')
+
 		editor.currGame = currGame;
 		newGameList.setValue(currGame);
 	});
+
+	// signals.clear.add(function(){
+
+	// 	refeshUI();
+	// });
 
 	newGameRow.add( new UI.Text( 'AVAIABLE GAMES' ));
 	container.add( newGameRow );
@@ -53,14 +70,40 @@ Sidebar.Settings = function ( editor ) {
 
     container.add( maxScoreRow );
 
-	
+
+ 	var deleteButtonRow = new UI.Row();
+	var deleteButton = new UI.Button('Delete Game');
+	deleteButton.onClick( function () {
+		var networkId = editor.currGame;
+		if(networkId == '') return;
+		if ( confirm( 'Do you want to delete this game?' ) ) {
+			httpDeleteAsync(avaiableNetworksUrl + '/'+ networkId,function(res){
+				//console.log(res);	
+				//if(res.status == 200) {
+				alert('a game has been deleted');
+				signals.clear.dispatch();
+				//}
+			});
+		}
+
+	} );
+	deleteButtonRow.add(deleteButton);
+
+	container.add( deleteButtonRow );
+
+	signals.isAdmin.add(function(bool){
+
+		if(bool) deleteButtonRow.setDisplay( '' );
+		else deleteButtonRow.setDisplay( 'none' );
+		
+	});
 
 
-
-
-    //container.add( newGameRow );
-
-
+	signals.publishGraph.add(function(id){
+		refeshUI();
+		editor.currGame = id;
+		newGameList.setValue(id);
+	});
 
 	function refeshUI(){
 		var newGameOption = {};
@@ -70,54 +113,12 @@ Sidebar.Settings = function ( editor ) {
 			for( var network of res.networks ) {
 				newGameOption[network._id] = network.networkName;
 			}
-			newGameList.setOptions( newGameOption );
+			newGameList.setOptions( newGameOption ).setValue();
 
 		});
 
 
 	}
-	// var edgesVisibleRow = new UI.Row();
-	// var edgesVisible = new UI.Checkbox().onChange( updateEdgesVisible ).setValue(true);
-
-	// edgesVisibleRow.add( new UI.Text( 'Display Edges' ).setWidth( '120px' ) );
-	// edgesVisibleRow.add( edgesVisible );
-
-	// container.add( edgesVisibleRow );
-
-	// var flowsVisibleRow = new UI.Row();
-	// var flowsVisible = new UI.Checkbox().onChange( updateFlowsVisible );
-
-	// flowsVisibleRow.add( new UI.Text( 'Display Flows' ).setWidth( '120px' ) );
-	// flowsVisibleRow.add( flowsVisible );
-
-	// container.add( flowsVisibleRow );
-
-
-
-	// var gridVisibleRow = new UI.Row();
-	// var gridVisible = new UI.Checkbox().onChange( updateGridVisible ).setValue(true);
-
-	// gridVisibleRow.add( new UI.Text( 'Grid' ).setWidth( '120px' ) );
-	// gridVisibleRow.add( gridVisible );
-
-	// container.add( gridVisibleRow );
-
-
-	// var capcityVisibleRow = new UI.Row();
-	// var capcityVisible = new UI.Checkbox().onChange( updateCapcityVisible );
-
-	// capcityVisibleRow.add( new UI.Text( 'Display Capcity' ).setWidth( '120px' ) );
-	// capcityVisibleRow.add( capcityVisible );
-
-	// container.add( capcityVisibleRow );
-
-	/*
-	var snapSize = new UI.Number( 25 ).setWidth( '40px' ).onChange( update );
-	container.add( snapSize );
-	var snap = new UI.THREE.Boolean( false, 'snap' ).onChange( update );
-	container.add( snap );
-	*/
-
 
 
 	return container;

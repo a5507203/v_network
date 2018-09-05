@@ -42,7 +42,8 @@ var Menubar = function ( editor ) {
 	// container.add( new Menubar.Status( editor ) );
 	var logOutButton = new UI.Button( 'log out' ).setRight();
 	logOutButton.onClick( function () {
-       signals.userLogin.dispatch(false);
+		signals.clear.dispatch();
+    	signals.userLogin.dispatch(false);
 	} );
 	container.add (logOutButton );
 

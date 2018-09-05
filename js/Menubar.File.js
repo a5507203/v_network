@@ -33,9 +33,7 @@ Menubar.File = function ( editor ) {
 	option.onClick( function () {
 
 		if ( confirm( 'Do you want to start a new game?' ) ) {
-
-			editor.clear();
-
+			signals.clear.dispatch();
 		}
 
 	} );
@@ -218,7 +216,10 @@ Menubar.File = function ( editor ) {
                 alert('invalid password');
             }
             else{
+				alert('A new game has been added successfully!');
                 document.body.removeChild(popupContainer);
+				console.log(res);
+				signals.publishGraph.dispatch(res._id);
             }
         });
 	};

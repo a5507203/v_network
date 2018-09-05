@@ -312,7 +312,11 @@ var Viewport = function ( editor ) {
 	} );
 
 
+	signals.clear.add( function (  ) {
 
+		editor.clear();
+
+	} );
 
 	signals.objectAdded.add( function ( object ) {
 
@@ -385,7 +389,7 @@ var Viewport = function ( editor ) {
 
 		if (index !== -1) {
 			objects.splice(index, 1);
-			console.log('remove ' + object.name + " "+objects.length);
+			// console.log('remove ' + object.name + " "+objects.length);
 		}
 
 
