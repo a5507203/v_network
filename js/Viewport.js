@@ -396,7 +396,7 @@ var Viewport = function ( editor ) {
 			objects.splice(index, 1);
 			// console.log('remove ' + object.name + " "+objects.length);
 		}
-		console.log(object,objects);
+	
 
 	} );
 

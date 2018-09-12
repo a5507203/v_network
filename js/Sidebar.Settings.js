@@ -82,10 +82,11 @@ Sidebar.Settings = function ( editor ) {
 				//if(res.status == 200) {
 				alert('a game has been deleted');
 				signals.clear.dispatch();
+				refeshUI();
 				//}
 			});
 		}
-		refeshUI();
+		
 
 	} );
 	deleteButtonRow.add(deleteButton);
