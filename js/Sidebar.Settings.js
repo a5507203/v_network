@@ -85,6 +85,7 @@ Sidebar.Settings = function ( editor ) {
 				//}
 			});
 		}
+		refeshUI();
 
 	} );
 	deleteButtonRow.add(deleteButton);

@@ -22,8 +22,9 @@ var SetPositionCommand = function ( object, newPosition, optionalOldPosition ) {
 		this.oldPosition = optionalOldPosition.clone();
 
 	}
-	this.newNetworkPosition = new THREE.Vector2(convertCoordinate(this.newPosition.x),convertCoordinate(this.newPosition.y));
-	this.oldNetworkPosition = new THREE.Vector2(convertCoordinate(this.oldPosition.x),convertCoordinate(this.oldPosition.y));
+	var newCoor = convertToFileCoordinate(this.newPosition.x,this.newPosition.y);
+	this.newNetworkPosition = new THREE.Vector2(newCoor[0],newCoor[1]);
+	this.oldNetworkPosition = object.graphElement.orginalCoordinate.clone();
 	
 
 	

@@ -106,7 +106,7 @@ var NetworkVisualization = function ( editor ) {
         nodeObject.add(nodeNameLabel);
 
         // create a node data structue
-        var newNode = scope.graph.createNode(nodeObject.uuid, nodeName, new THREE.Vector2( nodeObject.position.x, nodeObject.position.y), new THREE.Vector2(convertCoordinate(nodeObject.position.x),convertCoordinate(nodeObject.position.y) ));
+        var newNode = scope.graph.createNode(nodeObject.uuid, nodeName, new THREE.Vector2( nodeObject.position.x, nodeObject.position.y), new THREE.Vector2(convertToFileCoordinate(nodeObject.position.x),convertToFileCoordinate(nodeObject.position.y) ));
         nodeObject.graphElement = newNode;
         scope.editor.execute( new AddNodeCommand(nodeObject)); 
 
@@ -248,7 +248,7 @@ NetworkVisualization.prototype = {
         Config.coordinateRange = Math.max(Math.abs(min), Math.abs(max));
 
         for ( let [key, node] of Object.entries(  scope.graph.nodes ) ) {
-            scope.graph.setNodeCoordinate(key, new THREE.Vector2( inverseToRealCoordinate( node.orginalCoordinate.x) , inverseToRealCoordinate( node.orginalCoordinate.y )) );
+            scope.graph.setNodeCoordinate(key, new THREE.Vector2( inverseToRenderCoordinate( node.orginalCoordinate.x) , inverseToRenderCoordinate( node.orginalCoordinate.y )) );
         }
 
         var nodesContainer = new THREE.Group();
@@ -832,12 +832,12 @@ function rgbToHex(r, g, b) {
 }
 
 
-function convertCoordinate( coor ) {
+function convertToFileCoordinate( coor ) {
     return (coor/25*Config.coordinateRange+Config.coordinateMean);
 
 }
 
-function inverseToRealCoordinate( coor ) {
+function inverseToRenderCoordinate( coor ) {
     return round2Dec( ( coor -Config.coordinateMean )/Config.coordinateRange*25 );
 
 }

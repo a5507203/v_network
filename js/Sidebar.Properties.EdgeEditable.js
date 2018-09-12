@@ -3,15 +3,9 @@ Sidebar.Properties.linkEditable = function ( editor, object ) {
 	var signals = editor.signals;
 	var container = new UI.Row();
     var graphElement = object.graphElement;
-    console.log(graphElement);
     var currentRoadType = Config.roadTypes[graphElement.modifiedType];
 
-    // b
-    // freeFlowTime
-    //   toll
 
-  
-    // type
     var roadTypeRow = new UI.Row();
     // TODO dinamically change options by road type, road orginal capacity
     var roadTypeOption = {};
@@ -20,13 +14,8 @@ Sidebar.Properties.linkEditable = function ( editor, object ) {
             roadTypeOption[typeIndex] = roadType.name;
     }
   
-//    console.log(roadTypeOption)
-    var roadType = new UI.Select().setOptions( roadTypeOption ).setWidth( '150px' ).setValue(graphElement.modifiedType).setFontSize( '12px' ).onChange( function() {
-        // var numberOfLanes = currentRoadType.numberOfLanes;
-        // var newRoadType = Config.roadTypes[roadType.getValue()];
-        // if( currentRoadType.numberOfLanes < newRoadType.minLanes) numberOfLanes = newRoadType.minLanes;
 
-        // var newCapacity = newRoadType.capacity*numberOfLanes;
+    var roadType = new UI.Select().setOptions( roadTypeOption ).setWidth( '150px' ).setValue(graphElement.modifiedType).setFontSize( '12px' ).onChange( function() {
         editor.execute( new SetEdgeTypeCommand( object, roadType.getValue()) );
        
     } );
@@ -40,10 +29,10 @@ Sidebar.Properties.linkEditable = function ( editor, object ) {
     
     var laneNoRow = new UI.Row();
     var laneNoOptions = createLaneNoOptions(currentRoadType.minLanes,currentRoadType.maxLanes);
-    console.log(laneNoOptions)
+
     var laneNo = new UI.Select().setOptions(laneNoOptions).setWidth('50px').setValue(graphElement.modifiedNumberOfLanes).onChange(function(){
         // var newLaneNo = laneNo.getValue();
-        console.log(laneNo.getValue());
+
          editor.execute( new SetLaneNumberCommand( object, laneNo.getValue()) );
     });
 
@@ -53,7 +42,7 @@ Sidebar.Properties.linkEditable = function ( editor, object ) {
     
     // capacity per lane
     var capacityPerLanesRow = new UI.Row();
-    console.log(currentRoadType);
+
     var capacityPerLanes = new UI.Text(currentRoadType.capacity);
 	capacityPerLanesRow.add( new UI.Text( 'Capacity per Lane' ).setWidth('140px'));
 	capacityPerLanesRow.add( capacityPerLanes );

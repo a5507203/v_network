@@ -7,15 +7,17 @@ var SetEdgeTypeCommand = function ( object, newTypeName ) {
 	// this.updatable = true;
 
 	this.object = object;
-	// this.attributeName = attributeName;
-	        // var numberOfLanes = currentRoadType.numberOfLanes;
-	this.oldRoadTypeName = object.graphElement.type;
+	
+	// previous road type and number of lanes
+	this.oldRoadTypeName = object.graphElement.modifiedType;
 	this.oldNumberOfLanes = object.graphElement.modifiedNumberOfLanes;
-
+	// new road type
 	this.newRoadTypeName = newTypeName;
+	
 
 	var newRoadType = Config.roadTypes[this.newRoadTypeName];
 	
+	// check old #lanes whether smaller or larger than new #lanes
 	if ( this.oldNumberOfLanes < newRoadType.minLanes ) {
 		this.newNumberOfLanes = newRoadType.minLanes;
 		this.name +=' and Lane number to ' + this.newNumberOfLanes;

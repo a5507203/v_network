@@ -25,78 +25,93 @@ FileLoader.prototype = {
     // load a zip folder
     loadFile: function( file ){
         var scope = this;
-        scope.reader.addEventListener( 'load', function ( event ) {	
-            var contents = event.target.result;
-            var count = 0;
-            var zip = new JSZip( );
-            var dataDict = {};
-            var roadTypeFile = false;
-            zip.loadAsync(contents).then(function (zip) {
-                zip.files[scope.NODEFILENAME].async('string').then(function (fileData) {
-                    dataDict.nodes = fileData;
-                    count += 1;
-                    checkCompete();
-				});
+        // if (editor.currGame !='')
 
-                zip.files[scope.EDGEFILENAME].async('string').then(function (fileData) {
-                    dataDict.edges = fileData;
-                    count += 1;
-                    checkCompete();
-                });
+        
+        var startReading = function(){
+            console.log('start');
 
-                zip.files[scope.TRIPFILENAME].async('string').then(function (fileData) {
-                    dataDict.trips = fileData;
-                    count += 1;
-                    checkCompete();
-                });
-
-                if(!zip.files[scope.ROADTYPEFILENAME] ){
-             
-                }else{
-                    roadTypeFile = true;
-                    zip.files[scope.ROADTYPEFILENAME].async('string').then(function (fileData) {
-                    dataDict.roadTypes = fileData;
-                    count += 1;
-                    checkCompete();
-                    });
-                }
-
-                if(!zip.files[scope.GAMEINFOFILENAME]){
-                    count += 1;
-                }else{
-                    zip.files[scope.GAMEINFOFILENAME].async('string').then(function (fileData) {
-                        if(fileData != '') scope.signals.loadGameName.dispatch(fileData);
+            var load = function ( event ) {	
+                var contents = event.target.result;
+                var count = 0;
+                var zip = new JSZip( );
+                var dataDict = {};
+                var roadTypeFile = false;
+                zip.loadAsync(contents).then(function (zip) {
+                    zip.files[scope.NODEFILENAME].async('string').then(function (fileData) {
+                        dataDict.nodes = fileData;
                         count += 1;
                         checkCompete();
                     });
-                }
-            });
-            scope.signals.loadGameName.add(function(currGame){
-                if(roadTypeFile == true) return;    
-                httpGetAsync(Config.host+'/networks/'+currGame, function(network){
-                    console.log('asdfas');
-                    dataDict.roadTypes = network.roadTypes;
-                    count += 1;
-                    checkCompete();
-                
+
+                    zip.files[scope.EDGEFILENAME].async('string').then(function (fileData) {
+                        dataDict.edges = fileData;
+                        count += 1;
+                        checkCompete();
+                    });
+
+                    zip.files[scope.TRIPFILENAME].async('string').then(function (fileData) {
+                        dataDict.trips = fileData;
+                        count += 1;
+                        checkCompete();
+                    });
+
+                    if(!zip.files[scope.ROADTYPEFILENAME] ){
+
+                    }else{
+                        roadTypeFile = true;
+                        zip.files[scope.ROADTYPEFILENAME].async('string').then(function (fileData) {
+                            dataDict.roadTypes = fileData;
+                            count += 1;
+                            checkCompete();
+                        });
+                    }
+
+                    if(!zip.files[scope.GAMEINFOFILENAME]){
+                        count += 1;
+                    }else{
+                        zip.files[scope.GAMEINFOFILENAME].async('string').then(function (fileData) {
+                            if(fileData != '') scope.signals.loadGameName.dispatch(fileData);
+                            count += 1;
+                            checkCompete();
+                        });
+                    }
                 });
-                
-            });
-            function checkCompete (){
-                if(count == 5 ) {
-                    console.log(dataDict);
-                    editor.networkVisualization.readGraphFromString(dataDict);
+                scope.signals.loadGameName.add(function(currGame){
+                    if(roadTypeFile == true) return;    
+                    httpGetAsync(Config.host+'/networks/'+currGame, function(network){
+                        dataDict.roadTypes = network.roadTypes;
+                        count += 1;
+                        checkCompete();
+                    
+                    });
+
+                });
+                function checkCompete (){
+                    if(count == 5 ) {
+                        //console.log(dataDict);
+                        editor.networkVisualization.readGraphFromString(dataDict);
+                    }
                 }
-            }
-        }, false );
-        scope.reader.readAsBinaryString( file );
+                scope.reader.removeEventListener( 'load', load, false );
+            };
+            scope.reader.addEventListener( 'load', load, false );
+            scope.reader.readAsBinaryString( file );
+          
+            scope.signals.editorCleared.remove(startReading);
+        };
+        // scope.signals.editorCleared.remove(load);
+    
+        scope.signals.editorCleared.add(startReading);
+        scope.signals.clear.dispatch();
+
     },
 
     //load from api call
     loadDataUrl: function( url ){
         var scope = this;
         httpGetAsync(url, function(network){
-            console.log(network);
+           // console.log(network);
             var dataDict = {};
             dataDict.nodes = network.nodes;
             dataDict.edges = network.links;

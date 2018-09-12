@@ -1,6 +1,6 @@
 var Config = {
-    coordinateMean : 0,
-    coordinateRange : 2000,
+    coordinateMean : {x:0,y:0},
+    coordinateRange : 0,
     newNodeCount : 0,
     newNodeColor : 0x2bdb89,
     newEdgeCount : 0,
@@ -16,8 +16,8 @@ var Config = {
 
  function clearConfig(params) {
 
-    Config.coordinateMean = 0;
-    Config.coordinateRange = 2000;
+    Config.coordinateMean = {x:0,y:0};
+    Config.coordinateRange = 0;
     Config.newNodeCount = 0;
     Config.newNodeColor = 0x2bdb89;
     Config.newEdgeCount = 0;

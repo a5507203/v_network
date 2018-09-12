@@ -13,7 +13,7 @@ var NetworkVisualization = function ( editor ) {
     this.tripsContainer = editor.tripsContainer;
     
    
-
+    console.log(editor.camera);
 
 
     this.unitZVector = new THREE.Vector3( 0, 0, 1 );
@@ -47,26 +47,17 @@ var NetworkVisualization = function ( editor ) {
       
         var startNode = nodePairs[0].graphElement;
         var endNode = nodePairs[1].graphElement;
-        // if( scope.graph.hasEdge(startNode.uuid, endNode.uuid) ) {
-        //     scope.editor.deselect();
-        //     scope.signals.rendererChanged.dispatch( );
-        // }
-       // else{
-            // TODO the type and capcity of the road is not correct
-                                                        //lineWidth, length, b, power, toll, numberOfLanes, type
-
-            //                                              var lineWidth = calculateLineWidth(getCapacity(roadType,numberOfLanes));
-            // wset.add(lineWidth);
-            // scope.graph.createAndAddEdgeByNodeName( line[0], line[1], lineWidth, line[2], line[3],line[4], line[5], numberOfLanes, roadType);
         var currRoadTypeName = Object.keys(Config.roadTypes)[0];
-        var currLanes = Config.roadTypes[minRoadType].minLanes;
+        var currLanes = Config.roadTypes[currRoadTypeName].minLanes;
+
         var lineWidth = calculateLineWidth(getCapacity(currRoadTypeName,currLanes));
-        //lineWidth, length, b, power, toll, numberOfLanes, type
-        var edgeInfo = scope.graph.createEdge(startNode.uuid, endNode.uuid, lineWidth, 0 ,0.15,4,0,0, 'none', currRoadTypeName, currLanes, calculateRoadLength(startNode.orginalCoordinate, endNode.orginalCoordinate));
+        
+        //lineWidth, length, b, power, toll, numberOfLanes, type, modifiedType, modifiedNumberOfLanes, modifiedLength
+        var edgeInfo = scope.graph.createEdge(startNode.uuid, endNode.uuid, lineWidth, 0 ,1,1,0,0, 'none',  currRoadTypeName, currLanes, calculateRoadLength(startNode.orginalCoordinate, endNode.orginalCoordinate));
 
         var edgeObject = scope.createEdgeObject(startNode, endNode, edgeInfo.edge,edgeInfo.scalar);
         scope.editor.addNewEdgeMode = 0;
-        console.log(edgeObject);
+  
 
         // edgeObject.graphElement = edge;
         startNode.outgoingEdges.push(edgeObject);
@@ -106,7 +97,7 @@ var NetworkVisualization = function ( editor ) {
         nodeObject.add(nodeNameLabel);
 
         // create a node data structue
-        var newNode = scope.graph.createNode(nodeObject.uuid, nodeName, new THREE.Vector2( nodeObject.position.x, nodeObject.position.y), new THREE.Vector2(convertCoordinate(nodeObject.position.x),convertCoordinate(nodeObject.position.y) ));
+        var newNode = scope.graph.createNode(nodeObject.uuid, nodeName, new THREE.Vector2( nodeObject.position.x, nodeObject.position.y), new THREE.Vector2(convertToFileCoordinate(nodeObject.position.x),convertToFileCoordinate(nodeObject.position.y) ));
         nodeObject.graphElement = newNode;
         scope.editor.execute( new AddNodeCommand(nodeObject)); 
 
@@ -128,7 +119,6 @@ var NetworkVisualization = function ( editor ) {
     } );
     this.signals.lineTypeChanged.add(function (edge) {
         edge.material.dispose();
-        console.log(edge.graphElement.modifiedType);
         edge.graphElement.lineWidth = calculateLineWidth(getCapacity(edge.graphElement.modifiedType,edge.graphElement.modifiedNumberOfLanes));
         var color = scope.getEdgeColor(edge.graphElement.modifiedType);
         edge.material = new MeshLineMaterial({color:color,sizeAttenuation:true,lineWidth:edge.graphElement.lineWidth, transparent:true, opacity:1});
@@ -161,7 +151,7 @@ var NetworkVisualization = function ( editor ) {
         for( var edge of node.graphElement.incomingEdges ) {
             var startNode = scope.graph.nodes[edge.from];
             scope.changeEdgePosition( edge, new THREE.Vector3(startNode.coordinate.x, startNode.coordinate.y, 0 ), node.position, startNode.orginalCoordinate, node.graphElement.orginalCoordinate );
-        scope.editor.addOrRemoveEdgeObjectToInvoice(edge);
+            scope.editor.addOrRemoveEdgeObjectToInvoice(edge);
         }
 
         scope.signals.rendererChanged.dispatch( );
@@ -210,8 +200,8 @@ NetworkVisualization.prototype = {
 
     readNodesFromString : function( data ){
     
-        Config.coordinateMean = 0;
-        Config.coordinateRange = 0;
+        // Config.coordinateMean = 0;
+        // Config.coordinateRange = 0;
         var scope = this;
         var min = Infinity;
         var max = -Infinity;
@@ -226,8 +216,9 @@ NetworkVisualization.prototype = {
             
             var x = parseFloat( row[1] );
             var y = parseFloat( row[2] ); 
-            Config.coordinateMean += x + y;
-            len += 2;
+            Config.coordinateMean.x += x;
+            Config.coordinateMean.y += y;
+            len += 1;
 
             if ( x < y ) {
                 if ( min > x ) min = x;
@@ -243,16 +234,25 @@ NetworkVisualization.prototype = {
             scope.graph.setNodeOrignalCoordinate( currNodeUUID, new THREE.Vector2( x, y ) );
         }
     
-        Config.coordinateMean = Config.coordinateMean / len;
-        min -= Config.coordinateMean;
-        max -= Config.coordinateMean;
+        // Config.coordinateMean = Config.coordinateMean / len;
+
+        Config.coordinateMean.x = Config.coordinateMean.x / len;
+        Config.coordinateMean.y = Config.coordinateMean.y/ len;
+        // min -= Config.coordinateMean;
+        // max -= Config.coordinateMean;
         Config.coordinateRange = Math.max(Math.abs(min), Math.abs(max));
+        Config.coordinateScalar = Config.coordinateRange/50;
+ 
+
 
         for ( let [key, node] of Object.entries(  scope.graph.nodes ) ) {
-            scope.graph.setNodeCoordinate(key, new THREE.Vector2( inverseToRealCoordinate( node.orginalCoordinate.x) , inverseToRealCoordinate( node.orginalCoordinate.y )) );
+            var newRenderCoor = inverseToRenderCoordinate( node.orginalCoordinate.x,node.orginalCoordinate.y);
+            scope.graph.setNodeCoordinate(key, new THREE.Vector2( newRenderCoor[0] , newRenderCoor[1]) );
         }
 
-        var nodesContainer = new THREE.Group();
+        
+
+        console.log(scope.graph);
 
     },
     
@@ -288,24 +288,19 @@ NetworkVisualization.prototype = {
             if (line.length < 8 ) continue;
             var numberOfLanes = parseFloat(line[6]);
             var roadType = line[7];
-            // console.log(Config.roadTypes);
-            // var capacity = getCapacity(roadType,numberOfLanes);
-         
  
-            // if (!Config.roadType.hasOwnProperty( currCapcity )){
-            //     Config.roadType[currCapcity] = typeNum;
-            // }
             
             var lineWidth = calculateLineWidth(getCapacity(roadType,numberOfLanes));
             wset.add(lineWidth);
             scope.graph.createAndAddEdgeByNodeName( line[0], line[1], lineWidth, line[2], line[3],line[4], line[5], numberOfLanes, roadType);
         }
-        console.log('line width',wset);
+      
         // Config.roadType = sortRoadType(Config.roadType);
         // for(let key of Object.keys(Config.roadType)) {
         //     Config.minRoadType = key;
         //     break;
         // }
+
        
     },
 
@@ -460,9 +455,10 @@ NetworkVisualization.prototype = {
             // this.renderTrips( node );
             
         }   
+
         this.renderTrips( );
         //this.setLabelsVisible(this.edgesContainer, false );
-
+        
         this.signals.rendererChanged.dispatch();
     },
 
@@ -496,6 +492,7 @@ NetworkVisualization.prototype = {
           nodeObject.type = '0';
           nodeObject.graphElement = node;
           this.objects.push(nodeObject);
+
           
 
     },
@@ -521,7 +518,7 @@ NetworkVisualization.prototype = {
         dist.children = [];
         for(var node of source.children){
             var newNode = node.clone();
-            // console.log(node.children[0]);
+        
             newNode.add(this.createLabel(node.graphElement.name));
             dist.add(newNode);
             // break;
@@ -588,8 +585,8 @@ NetworkVisualization.prototype = {
 
     },
     getEdgeColor: function( type ){
-   
-        console.log(Colors[Config.roadTypes[type].colorIndex]);
+        
+       
 
         return new THREE.Color(Colors[Config.roadTypes[type].colorIndex]);
 
@@ -602,7 +599,8 @@ NetworkVisualization.prototype = {
         var lineWidth = edge.lineWidth;
 
         var capacity = edge.capacity;
-        var color = this.getEdgeColor(edge.type);
+
+        var color = this.getEdgeColor(edge.modifiedType);
         // init start and end position of edge and create edge
         var startPos = new THREE.Vector3( startNode.coordinate.x, startNode.coordinate.y, 0 );
         var endPos = new THREE.Vector3( endNode.coordinate.x, endNode.coordinate.y, 0 );
@@ -662,8 +660,7 @@ NetworkVisualization.prototype = {
         this.flowsContainer.children = [];
         this.cloneNodes(this.nodesContainer,this.flowsContainer);
         // editor.flowScene.children[2] = this.nodesContainer.clone();
-        // console.log(editor.flowScene)
-        // console.log(this.flowNodesContainer);
+
         for ( let node of Object.values(this.graph.nodes) ) {
             for( let [key,flows] of Object.entries( node.flows )) {
                 for( var i = 0; i< flows.length ; i += 1) {
@@ -713,9 +710,7 @@ NetworkVisualization.prototype = {
         this.cloneNodes(this.nodesContainer, this.tripsContainer);
         for ( let [key,node] of Object.entries(this.graph.nodes) ) {
            
-          
-            console.log('adffadf');
-         
+        
 
             for( let [endNode,trips] of Object.entries( node.trips )) {
     
@@ -833,15 +828,18 @@ function rgbToHex(r, g, b) {
 }
 
 
-function convertCoordinate( coor ) {
-    return (coor/25*Config.coordinateRange+Config.coordinateMean);
+function convertToFileCoordinate( coorX, coorY ) {
+    return [(coorX*Config.coordinateScalar+Config.coordinateMean.x),(coorY*Config.coordinateScalar+Config.coordinateMean.y)];
 
 }
 
-function inverseToRealCoordinate( coor ) {
-    return round2Dec( ( coor -Config.coordinateMean )/Config.coordinateRange*25 );
+function inverseToRenderCoordinate( coorX, coorY ) {
+
+    return [ round2Dec( ( coorX - Config.coordinateMean.x )/Config.coordinateScalar ), round2Dec( ( coorY - Config.coordinateMean.y )/Config.coordinateScalar )];
 
 }
+
+
 
 function calculateLineWidth( capacity ) {
 
@@ -875,7 +873,6 @@ function sortRoadType(obj) {
         }
     }
     var result = {};
-    console.log(arr);
     arr.sort(function(a, b) {
         return a.key - b.key;
     }).map(function(i){result[i.key]= type; type+=1;});

@@ -58,7 +58,9 @@ var Editor = function (  ) {
 	};
 
 	this.camera = this.DEFAULT_CAMERA.clone();
-	
+
+	// 	this.camera = new THREE.OrthographicCamera( -60 , 60, 60, -60, 1, 1000 );
+	// this.camera.position.set( 0, 0, 60);
 	this.scene = new THREE.Scene();
 	this.scene.name = 'networkScene';
 	this.storage = new Storage();
@@ -221,6 +223,7 @@ Editor.prototype = {
 	removeEdge: function ( edge ) {
 
 		this.edgesContainer.remove(edge);
+		console.log(edge);
 		this.graph.removeEdge(edge);
 		delete this.newEdgesDict[edge.uuid];
 		this.remove( this.graph.nodes[edge.from].outgoingEdges, edge );
@@ -232,11 +235,16 @@ Editor.prototype = {
 
 	addOrRemoveEdgeObjectToInvoice:function(edgeObject){
 		var edge = edgeObject.graphElement;
+		// console.log(this.newEdgesDict.hasOwnProperty(edgeObject.uuid));
+		// console.log(edge.modifiedType, edge.type);
+		// console.log(edge.modifiedNumberOfLanes == edge.numberOfLanes );
 		if( (edge.modifiedType != edge.type || edge.modifiedNumberOfLanes != edge.numberOfLanes || edge.length != edge.modifiedLength ) && !this.newEdgesDict.hasOwnProperty(edge.uuid) ) {
 			this.newEdgesDict[edgeObject.uuid] = edgeObject;
 		}
-		else if(this.newEdgesDict.hasOwnProperty(edge.uuid) && edge.modifiedType == edge.type && edge.modifiedNumberOfLanes == edge.numberOfLanes && edge.length == modifiedLength  ){
-			delete this.newEdgesDict[edge.uuid];
+		
+		else if(this.newEdgesDict.hasOwnProperty(edgeObject.uuid) && edge.modifiedType == edge.type && edge.modifiedNumberOfLanes == edge.numberOfLanes && edge.length == edge.modifiedLength  ){
+			delete this.newEdgesDict[edgeObject.uuid];
+			console.log('deleted');
 		}
 	},
 
@@ -245,6 +253,7 @@ Editor.prototype = {
 		var graphElement = edge.graphElement;
 		graphElement.modifiedType = roadTypeName;
 		graphElement.modifiedNumberOfLanes = numberOfLanes;
+		console.log(roadTypeName)
 
 		if( (graphElement.modifiedType != graphElement.type || graphElement.modifiedNumberOfLanes != graphElement.numberOfLanes) && !this.newEdgesDict.hasOwnProperty(edge.uuid) ) {
 			this.newEdgesDict[edge.uuid] = edge;
@@ -336,19 +345,21 @@ Editor.prototype = {
 		this.history.clear();
 		this.camera.copy( this.DEFAULT_CAMERA );
 		this.newEdgesDict = {};
-		this.objects = [];
+		// this.objects = [];
 		this.object = {};
 		this.helpers = {};
 		this.selected = null;
 		this.graph.clear();
 		this.currGame = '';
 		this.removeObjects(this.edgesContainer);
+
 		this.removeObjects(this.nodesContainer);
-		this.removeObjects(this.flowsContainer);
-		this.removeObjects(this.tripsContainer);
+
+		// this.removeObjects(this.flowsContainer);
+		// this.removeObjects(this.tripsContainer);
 
 		clearConfig();
-		console.log(this.scene);
+
 		this.signals.editorCleared.dispatch();
 		
 		// while ( .length > 0 ) {
@@ -361,10 +372,9 @@ Editor.prototype = {
 		var objects = parent.children;
 		while(objects.length>0){
 		
-
+			var object = objects[0];
 			parent.remove( objects[0] );
-
-			this.signals.objectRemoved.dispatch( objects[0] );
+			this.signals.objectRemoved.dispatch( object );
 			this.signals.rendererChanged.dispatch();
 		}
 

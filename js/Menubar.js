@@ -20,6 +20,7 @@ var Menubar = function ( editor ) {
 	submit.onClick( function () {
 		
     	var graphContents = editor.graph.toCsv();
+		console.log(graphContents);
         userInfo = JSON.parse(getCookie('userInfo'));
      
 		var networkInfo = {

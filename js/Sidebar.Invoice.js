@@ -63,6 +63,7 @@ Sidebar.Invoice = function ( editor ) {
 		
 
 		return Math.round10((addLaneCost+upgradeCost+lengthChangeCost),-2);
+		// return 1;
 	}
 
 	var outliner = new UI.Outliner( editor );
@@ -89,9 +90,9 @@ Sidebar.Invoice = function ( editor ) {
 
 
 	// refreshUI
-
+	var recursive = 1;
 	function refreshUI() {
-		console.log('refresh budget')
+	
 
 		var options = [];
 		var pad = 0;
@@ -105,9 +106,19 @@ Sidebar.Invoice = function ( editor ) {
 		
 		}
 
-		if(Config.totalLeft < 0){
+		if(Config.totalLeft < 0 ){
 			editor.undo();
+		// 	recursive = 0;
 			refreshUI();
+		// 	options = [];
+		// 	for ( let [uuid, edgeObject] of Object.entries((editor.newEdgesDict))) {
+			
+        //     option = buildOption( uuid, edgeObject, false );
+        //     option.style.paddingLeft = ( pad * 10 ) + 'px';
+        //     options.push( option );
+		
+		// }
+		// 	recursive = 1;
 			alert('Over budget!');
 		}
 

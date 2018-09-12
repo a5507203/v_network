@@ -296,9 +296,12 @@ var Viewport = function ( editor ) {
 			if (editor.mode != "AnimationMode" && object.name != 'link' && editor.addNewEdgeMode == 0 && editor.nodeMoveable != 0)
 				transformControls.attach( object );
 			if ( editor.addNewEdgeMode == 1 ) {
+				console.log('node pair length',nodePairs.length);
 				if (nodePairs.length < 2 && object.name == 'node' ) {
 					nodePairs.push(object);
-					console.log( nodePairs.length );
+				
+					
+			
 				}
 				if(nodePairs.length == 2){
 
@@ -337,6 +340,7 @@ var Viewport = function ( editor ) {
 	} );
 
 	signals.addNewEdgeEnd.add( function ( object ) {
+		console.log('cleared node pairs');
 		editor.addNewEdgeMode = 0;
 		nodePairs = [];
 
@@ -388,11 +392,11 @@ var Viewport = function ( editor ) {
 		// } );
 		var index = objects.indexOf(object);
 
-		if (index !== -1) {
+		if (index != -1) {
 			objects.splice(index, 1);
 			// console.log('remove ' + object.name + " "+objects.length);
 		}
-
+		console.log(object,objects);
 
 	} );
 

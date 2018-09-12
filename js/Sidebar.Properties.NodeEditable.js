@@ -25,8 +25,11 @@ Sidebar.Properties.nodeEditable = function ( editor, object ) {
 	// position
 
 	var objectPositionRow = new UI.Row();
-	var objectPositionX = new UI.Number(parseFloat(graphElement.orginalCoordinate.x)).setWidth( '50px' ).setStep(2/25*Config.coordinateRange).onChange(update);
-	var objectPositionY = new UI.Number(parseFloat(graphElement.orginalCoordinate.y)).setWidth( '50px' ).setStep(2/25*Config.coordinateRange).onChange(update);
+	// 50/500000
+	// 500000 * 2/50
+	// 50
+	var objectPositionX = new UI.Number(parseFloat(graphElement.orginalCoordinate.x)).setWidth( '50px' ).setStep(1/25*Config.coordinateRange).onChange(update);
+	var objectPositionY = new UI.Number(parseFloat(graphElement.orginalCoordinate.y)).setWidth( '50px' ).setStep(1/25*Config.coordinateRange).onChange(update);
 
 
 	objectPositionRow.add( new UI.Text( 'Position' ).setWidth( '90px' ) );
@@ -39,11 +42,12 @@ Sidebar.Properties.nodeEditable = function ( editor, object ) {
 		var object = editor.selected;
 
 		if ( object !== null ) {
-			var newX =  inverseToRealCoordinate(objectPositionX.getValue());
-			var newY =	inverseToRealCoordinate(objectPositionY.getValue());
+			var newRenderCoor = inverseToRenderCoordinate(objectPositionX.getValue(),objectPositionY.getValue());
+			// var newX =  inverseToRenderCoordinate(objectPositionX.getValue());
+			// var newY =	inverseToRenderCoordinate(objectPositionY.getValue());
 
 
-			var newPosition = new THREE.Vector3(newX, newY, 0 );
+			var newPosition = new THREE.Vector3(newRenderCoor[0], newRenderCoor[1], 0 );
 			
 			if ( object.position.distanceTo(  newPosition ) >= 0.01 ) {
 				console.log('setSuccess');
@@ -65,9 +69,9 @@ Sidebar.Properties.nodeEditable = function ( editor, object ) {
 
 	function updateUI( object ) {
 
-
-		objectPositionX.setValue( convertCoordinate(object.position.x) );
-		objectPositionY.setValue( convertCoordinate(object.position.y) );
+		var newCoor =  convertToFileCoordinate(object.position.x,object.position.y);
+		objectPositionX.setValue( newCoor[0] );
+		objectPositionY.setValue( newCoor[1] );
 		objectName.setValue(object.graphElement.name);
 		// objectPositionX.setValue(  object.position.x);
 		// objectPositionY.setValue(object.position.y );

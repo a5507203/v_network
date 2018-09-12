@@ -77,7 +77,7 @@ Node.prototype = {
 
 };
 
-var Edge = function( lineWidth, length, b, power, toll, numberOfLanes, type, modifiedType, modifiedNumberOfLanes,modifiedLength ) {
+var Edge = function( lineWidth, length, b, power, toll, numberOfLanes, type, modifiedType, modifiedNumberOfLanes, modifiedLength ) {
     this.lineWidth = lineWidth;
     this.length = length; 
     this.numberOfLanes = numberOfLanes;
@@ -213,8 +213,9 @@ Graph.prototype = {
     createAndAddEdgeByNodeName : function ( startNodeName, endNodeName, lineWidth, length, b, power, toll, numberOfLanes, type ) {
         var start = this.findUUIDbyNodeName ( startNodeName );
         var end = this.findUUIDbyNodeName ( endNodeName );
-     
-        this.addEdge(start,end,new Edge( lineWidth, length, b, power, toll, numberOfLanes, type ));
+        // var length = calculateRoadLength(startNode.orginalCoordinate, endNode.orginalCoordinate)
+        this.addEdge(start,end,new Edge( lineWidth, calculateRoadLength(this.nodes[start].orginalCoordinate, this.nodes[end].orginalCoordinate), b, power, toll, numberOfLanes, type ));
+        //this.addEdge(start,end,new Edge( lineWidth, length, b, power, toll, numberOfLanes, type ));
 
     },
 
@@ -232,12 +233,14 @@ Graph.prototype = {
         return null;
     },
 
-    createEdge : function ( start, end, lineWidth, length, b, power, toll, numberOfLanes, type ) {
 
+    createEdge : function ( start, end, lineWidth, length, b, power, toll, numberOfLanes, type, modifiedType, modifiedNumberOfLanes, modifiedLength ) {
+        console.log(start,end);
         if ( !this.nodes[start] || !this.nodes[end] ) return;
         if (this.nodes[start].edges[end] == undefined) scalar = 0;
         else scalar = this.nodes[start].edges[end].length;
-        return {edge:new Edge( lineWidth, length, b, power, toll, numberOfLanes, type ),scalar:scalar};
+       
+        return {edge:new Edge( lineWidth, length, b, power, toll, numberOfLanes, type, modifiedType, modifiedNumberOfLanes, modifiedLength ),scalar:scalar};
 
     },
 
@@ -260,7 +263,7 @@ Graph.prototype = {
         var end = edge.to;
         if ( !this.nodes[start] || !this.nodes[end] || !this.nodes[start].edges[end] ) return;
 
-        this.remove(this.nodes[start].edges[end], edge);
+        this.remove(this.nodes[start].edges[end], edge.graphElement);
     },
     
 
@@ -361,6 +364,7 @@ Graph.prototype = {
     },
     
     remove: function(array, element) {
+        // console.log(366,array,element);
    		var index = array.indexOf(element);
     
 		if (index !== -1) {
@@ -368,13 +372,20 @@ Graph.prototype = {
 		}
 	},
     clear: function(){
-        this.nodes = {};
+        clearJSObject(this.nodes);
+
     }
 
   
 };
   
   
+function clearJSObject(obj){
+        
+    Object.keys(obj).forEach(function (prop) {
+        delete obj[prop];
+    });
+}
 
 function sortObject(object, property, remainProperty){
     var sortedArray = [];

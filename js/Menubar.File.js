@@ -47,11 +47,12 @@ Menubar.File = function ( editor ) {
 	var fileInput = document.createElement( 'input' );
 	fileInput.type = 'file';
 	fileInput.addEventListener( 'change', function ( event ) {
-
+		console.log('fileInputChanged');
 		editor.fileLoader.loadFile( fileInput.files[ 0 ] );
 		form.reset();
 
 	} );
+	form.appendChild(fileInput);
 
 	var upload = new UI.Row();
 	upload.setClass( 'option' );
