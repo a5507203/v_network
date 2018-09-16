@@ -11,24 +11,24 @@ var Toolbar = function ( editor ) {
 
 	// showEdges / showFlows / scale
 
-	var showEdges = new UI.Button( 'Network' );
-	showEdges.dom.classList.add( 'selected' );
-	showEdges.onClick( function () {
-       updateGraphElementDisplay( 0 );
-	} );
-	buttons.add( showEdges );
+	// var showEdges = new UI.Button( 'Network' );
+	// showEdges.dom.classList.add( 'selected' );
+	// showEdges.onClick( function () {
+    //    updateGraphElementDisplay( 0 );
+	// } );
+	// buttons.add( showEdges );
 
-	var showFlows = new UI.Button( 'Traffic Flow' );
-	showFlows.onClick( function () {
-        updateGraphElementDisplay( 1 );
-	} );
-	buttons.add( showFlows );
+	// var showFlows = new UI.Button( 'Traffic Flow' );
+	// showFlows.onClick( function () {
+    //     updateGraphElementDisplay( 1 );
+	// } );
+	// buttons.add( showFlows );
 
-	var showTrips = new UI.Button( 'Desire Lines' );
-	showTrips.onClick( function () {
-        updateGraphElementDisplay( 2 );
-	} );
-	buttons.add( showTrips );
+	// var showTrips = new UI.Button( 'Desire Lines' );
+	// showTrips.onClick( function () {
+    //     updateGraphElementDisplay( 2 );
+	// } );
+	// buttons.add( showTrips );
 
 
 	function updateGraphElementDisplay ( type ) {

@@ -1,6 +1,6 @@
 FileLoader = function ( editor ) {
     
-    // this.FLOWFILENAME  = 'flows.csv';
+    this.FLOWFILENAME  = 'flows.csv';
     this.EDGEFILENAME = 'networks.csv';
     this.NODEFILENAME = 'nodes.csv'; 
     this.TRIPFILENAME = 'trips.csv';
@@ -38,26 +38,56 @@ FileLoader.prototype = {
                 var dataDict = {};
                 var roadTypeFile = false;
                 zip.loadAsync(contents).then(function (zip) {
-                    zip.files[scope.NODEFILENAME].async('string').then(function (fileData) {
-                        dataDict.nodes = fileData;
-                        count += 1;
-                        checkCompete();
-                    });
 
-                    zip.files[scope.EDGEFILENAME].async('string').then(function (fileData) {
-                        dataDict.edges = fileData;
-                        count += 1;
-                        checkCompete();
-                    });
+                    if(!zip.files[scope.NODEFILENAME] ){
+                        checkCompete('can not find nodes.csv');
+                    }
+                    else{
+                        zip.files[scope.NODEFILENAME].async('string').then(function (fileData) {
+                            dataDict.nodes = fileData;
+                            count += 1;
+                            checkCompete();
+                        });
+                    }
 
-                    zip.files[scope.TRIPFILENAME].async('string').then(function (fileData) {
-                        dataDict.trips = fileData;
-                        count += 1;
-                        checkCompete();
-                    });
+
+                    if(!zip.files[scope.EDGEFILENAME] ){
+                        checkCompete('can not find networks.csv');
+                    }
+                    else{
+                        zip.files[scope.EDGEFILENAME].async('string').then(function (fileData) {
+                            dataDict.edges = fileData;
+                            count += 1;
+                            checkCompete();
+                        });
+                    }
+
+                    // if(!zip.files[scope.FLOWFILENAME] ){
+                    //     count += 1;
+                    // }
+                    // else{
+                    //     zip.files[scope.FLOWFILENAME].async('string').then(function (fileData) {
+                    //         dataDict.flows = fileData;
+                    //         count += 1;
+                    //         checkCompete();
+                    //     });
+                    // }
+
+
+
+                    if(!zip.files[scope.TRIPFILENAME] ){
+                        checkCompete('can not find trips.csv');
+                    }else{
+                        zip.files[scope.TRIPFILENAME].async('string').then(function (fileData) {
+                            dataDict.trips = fileData;
+                            count += 1;
+                            checkCompete();
+                        });
+                    }
+
 
                     if(!zip.files[scope.ROADTYPEFILENAME] ){
-
+                        checkCompete('can not find roadTypes.csv');
                     }else{
                         roadTypeFile = true;
                         zip.files[scope.ROADTYPEFILENAME].async('string').then(function (fileData) {
@@ -66,6 +96,7 @@ FileLoader.prototype = {
                             checkCompete();
                         });
                     }
+                    
 
                     if(!zip.files[scope.GAMEINFOFILENAME]){
                         count += 1;
@@ -77,6 +108,8 @@ FileLoader.prototype = {
                         });
                     }
                 });
+
+
                 scope.signals.loadGameName.add(function(currGame){
                     if(roadTypeFile == true) return;    
                     httpGetAsync(Config.host+'/networks/'+currGame, function(network){
@@ -87,8 +120,10 @@ FileLoader.prototype = {
                     });
 
                 });
-                function checkCompete (){
-                    if(count == 5 ) {
+                function checkCompete (error){
+                    if( error) {alert(error);signals.editor.clear.dispatch();}
+
+                    if(count == 5) {
                         //console.log(dataDict);
                         editor.networkVisualization.readGraphFromString(dataDict);
                     }
@@ -111,11 +146,11 @@ FileLoader.prototype = {
     loadDataUrl: function( url ){
         var scope = this;
         httpGetAsync(url, function(network){
-           // console.log(network);
+           console.log(network);
             var dataDict = {};
             dataDict.nodes = network.nodes;
             dataDict.edges = network.links;
-            // dataDict.flows = network.flows;
+            dataDict.flows = network.flows;
         
             dataDict.trips = network.trips;
             dataDict.roadTypes = network.roadTypes;

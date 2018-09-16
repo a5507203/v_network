@@ -17,10 +17,21 @@ var Menubar = function ( editor ) {
 	//SUBMIT
 	var submitResultUrl = Config.host+'/scores';
 	var submit = new UI.Button('Submit');
-	submit.onClick( function () {
+	submit.onClick( submitGraph );
+	container.add( submit );
+
+
+	// container.add( new Menubar.Status( editor ) );
+	var logOutButton = new UI.Button( 'log out' ).setRight();
+	logOutButton.onClick( function () {
+		signals.clear.dispatch();
+    	signals.userLogin.dispatch(false);
+	} );
+	container.add (logOutButton );
+	
+	function submitGraph() {
 		
     	var graphContents = editor.graph.toCsv();
-		console.log(graphContents);
         userInfo = JSON.parse(getCookie('userInfo'));
      
 		var networkInfo = {
@@ -36,18 +47,7 @@ var Menubar = function ( editor ) {
 			alert('TSTT is changed by '+ Math.round10(parseFloat(res.score),-2));
 	
         });
-	} );
-	container.add( submit );
-
-
-	// container.add( new Menubar.Status( editor ) );
-	var logOutButton = new UI.Button( 'log out' ).setRight();
-	logOutButton.onClick( function () {
-		signals.clear.dispatch();
-    	signals.userLogin.dispatch(false);
-	} );
-	container.add (logOutButton );
-
+	}
 
 	return container;
 

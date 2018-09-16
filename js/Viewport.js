@@ -3,63 +3,44 @@ var Viewport = function ( editor ) {
 	var signals = editor.signals;
 	var animationLoopId;
 	var preCamera;
-	//var animationCamera = undefined;
- 	var container  = this.container = new UI.Panel();
-	container.setId( 'viewport' );
-	container.setPosition( 'absolute' );
 
-	///container.add( new Viewport.Info( editor ) );
-
-	//
+	var canvas = document.createElement('canvas');
+	canvas.setAttribute('id', 'c');
+	document.body.appendChild(canvas);
 
 	var nodePairs = [];
 
 
-	var renderer =  new THREE.WebGLRenderer(  );
+	var renderer =  new THREE.WebGLRenderer( { canvas: canvas, antialias: false } );
 	renderer.setClearColor( 0xffffff, 1 );
-
+	renderer.setPixelRatio( window.devicePixelRatio );
 	renderer.autoClear = false;
-	// renderer.autoUpdateScene = false;
-	// renderer.setPixelRatio( window.devicePixelRatio );
-	renderer.setSize( container.dom.offsetWidth, container.dom.offsetHeight );
-	container.dom.appendChild( renderer.domElement );
 
-	var camera = editor.camera;
 	// scenes
-	var scene = editor.scene;
+	var editScene = editor.editScene;
+	var camera = editScene.userData.camera;
+	var container  = editScene.userData.element;
 	var sceneHelpers = editor.sceneHelpers;
 	var flowScene = editor.flowScene;
-	var tripScene = editor.tripScene;
+	addOrbitControls(flowScene);
 
+	var fs = new FlowScene(flowScene, editor, renderAll);
+
+	var tripScene = editor.tripScene;
+	addOrbitControls(tripScene);
 	var objects = editor.objects;
 
 	// helpers
 
 	var grid = new THREE.GridHelper( 500, 250, 0x444444, 0x888888 );
-
-
 	grid.rotateX( Math.PI / 2 );
-	grid.visible = false;
-	// var grid = new THREE.GridHelper( 30, 30, 0x444444, 0x888888 );
-	// sceneHelpers.add( grid );
-
+	grid.visible = true;
 	var array = grid.geometry.attributes.color.array;
-
-	// for ( var i = 0; i < array.length; i += 60 ) {
-	// 	//console.log(array[i])
-	// 	for ( var j = 0; j < 12; j ++ ) {
-	// 		//console.log(array[ i + j ])
-	// 		array[ i + j ] = 0.26;
-
-	// 	}
-
-	// }
 	sceneHelpers.add( grid );
 
 	//
 
 	var box = new THREE.Box3();
-
 	var selectionBox = new THREE.BoxHelper();
 	selectionBox.material.depthTest = false;
 	selectionBox.material.transparent = true;
@@ -69,8 +50,22 @@ var Viewport = function ( editor ) {
 	var objectPositionOnDown = null;
 
 
-	var transformControls = new THREE.TransformControls( camera, container.dom );
+	function addOrbitControls(scene){
 
+		var orbitControls = new THREE.OrbitControls( scene.userData.camera, scene.userData.element);
+		orbitControls.minDistance = 0.1;
+		orbitControls.maxDistance = 700;
+		orbitControls.enablePan = true;
+		orbitControls.enableRotate = false;
+		orbitControls.autoRotate = false;
+		orbitControls.addEventListener('change', function(){
+
+			scope.signals.rendererChanged.dispatch();
+		});
+
+	}
+
+	var transformControls = new THREE.TransformControls( camera, container );
 
 	transformControls.addEventListener( 'change', function () {
 		var object = transformControls.object;
@@ -78,11 +73,6 @@ var Viewport = function ( editor ) {
 		if ( object !== undefined ) {
 
 			selectionBox.setFromObject( object );
-			// if ( editor.helpers[ object.id ] !== undefined ) {
-
-			// 	editor.helpers[ object.id ].update();
-
-			// }
 			signals.nodePositionChanging.dispatch(object);
 			signals.refreshSidebarObjectProperties.dispatch( object );
 
@@ -133,7 +123,7 @@ var Viewport = function ( editor ) {
 
 		mouse.set( ( point.x * 2 ) - 1, - ( point.y * 2 ) + 1 );
 
-		raycaster.setFromCamera( mouse, editor.camera );
+		raycaster.setFromCamera( mouse, camera );
 
 		return raycaster.intersectObjects( objects );
 
@@ -151,26 +141,20 @@ var Viewport = function ( editor ) {
 	}
 
 	function handleClick() {
+	
 
-		if ( onDownPosition.distanceTo( onUpPosition ) === 0 ) {
-		
+		if ( onDownPosition.distanceTo( onUpPosition ) === 0 ) {	
 			var intersects = getIntersects( onUpPosition, objects );
-			//var intersects = []
+	
 
 			if ( intersects.length > 0 ) {
 
 				var object = intersects[ 0 ].object;
 				
+
+				editor.select( object );
+
 				
-				if ( object.userData.object !== undefined ) {
-
-
-					
-				} else {
-
-					editor.select( object );
-
-				}
 
 			} else {
 
@@ -187,8 +171,9 @@ var Viewport = function ( editor ) {
 	function onMouseDown( event ) {
 
 		event.preventDefault();
+		console.log('mouse down')
 
-		var array = getMousePosition( container.dom, event.clientX, event.clientY );
+		var array = getMousePosition( container, event.clientX, event.clientY );
 		onDownPosition.fromArray( array );
 
 
@@ -198,7 +183,7 @@ var Viewport = function ( editor ) {
 
 	function onMouseUp( event ) {
 
-		var array = getMousePosition( container.dom, event.clientX, event.clientY );
+		var array = getMousePosition( container, event.clientX, event.clientY );
 		onUpPosition.fromArray( array );
 
 		handleClick();
@@ -211,7 +196,7 @@ var Viewport = function ( editor ) {
 
 		var touch = event.changedTouches[ 0 ];
 
-		var array = getMousePosition( container.dom, touch.clientX, touch.clientY );
+		var array = getMousePosition( container, touch.clientX, touch.clientY );
 		onDownPosition.fromArray( array );
 
 		document.addEventListener( 'touchend', onTouchEnd, false );
@@ -222,7 +207,7 @@ var Viewport = function ( editor ) {
 
 		var touch = event.changedTouches[ 0 ];
 
-		var array = getMousePosition( container.dom, touch.clientX, touch.clientY );
+		var array = getMousePosition( container, touch.clientX, touch.clientY );
 		onUpPosition.fromArray( array );
 
 		handleClick();
@@ -233,7 +218,7 @@ var Viewport = function ( editor ) {
 
 	function onDoubleClick( event ) {
 
-		var array = getMousePosition( container.dom, event.clientX, event.clientY );
+		var array = getMousePosition( container, event.clientX, event.clientY );
 		onDoubleClickPosition.fromArray( array );
 
 		var intersects = getIntersects( onDoubleClickPosition, objects );
@@ -246,14 +231,16 @@ var Viewport = function ( editor ) {
 
 	}
 
-	container.dom.addEventListener( 'mousedown', onMouseDown, false );
-	container.dom.addEventListener( 'touchstart', onTouchStart, false );
-	container.dom.addEventListener( 'dblclick', onDoubleClick, false );
+	container.addEventListener( 'mousedown', onMouseDown, false );
+	container.addEventListener( 'touchstart', onTouchStart, false );
+	container.addEventListener( 'dblclick', onDoubleClick, false );
+
+
 
 	// controls need to be added *after* main logic,
 	// otherwise controls.enabled doesn't work.
 
-	var controls = new THREE.EditorControls( camera, container.dom );
+	var controls = new THREE.EditorControls( camera, container );
 	controls.addEventListener( 'change', function () {
 
 		transformControls.update();
@@ -276,7 +263,7 @@ var Viewport = function ( editor ) {
 		selectionBox.visible = false;
 		transformControls.detach();
 		
-		if ( object !== null && object !== scene && object !== editor.camera ) {
+		if ( object !== null && object !== editScene && object !== camera ) {
 			
 			if( object.name == 'node') {
 				box.setFromObject( object );
@@ -406,15 +393,16 @@ var Viewport = function ( editor ) {
 
 	signals.windowResize.add( function () {
 
-		// TODO: Move this out?
+		var width = canvas.clientWidth;
+		var height = canvas.clientHeight;
+		if ( canvas.width !== width || canvas.height !== height ) {
+			renderer.setSize( width, height, false );
+		}
 
-		editor.DEFAULT_CAMERA.aspect = container.dom.offsetWidth / container.dom.offsetHeight;
-		editor.DEFAULT_CAMERA.updateProjectionMatrix();
-
-		camera.aspect = container.dom.offsetWidth / container.dom.offsetHeight;
-		camera.updateProjectionMatrix();
-
-		renderer.setSize( container.dom.offsetWidth, container.dom.offsetHeight );
+		sceneResize(editScene);
+		sceneResize(sceneHelpers);
+		sceneResize(flowScene);
+		sceneResize(tripScene);
 
 		renderAll();
 
@@ -445,35 +433,52 @@ var Viewport = function ( editor ) {
 		renderer.setClearColor( 0xe0e0e0 );
 		renderer.setScissorTest( true );
 
-		var rect = container.dom.getBoundingClientRect();
-
-		render( rect, scene);
-		render( rect, sceneHelpers);
-
-		if(editor.trafficFlow) render( rect, flowScene);
-
-		if(editor.desireLines) render( rect, tripScene);
+		render(editScene);
+		render(sceneHelpers);
+		render(flowScene);
+		render( tripScene);
 
 	}
 
-	function render(rect, scene){
+
+
+	function render(scene){
 
 		scene.updateMatrixWorld();
+		var element = scene.userData.element;
+		if(element.style.display == 'none') return;
+		// get its position relative to the page's viewport
+		var rect = element.getBoundingClientRect();
+	
+		// check if it's offscreen. If so skip it
+		if ( rect.bottom < 0 || rect.top  > renderer.domElement.clientHeight ||
+		rect.right  < 0 || rect.left > renderer.domElement.clientWidth ) {
+			return;  // it's off screen
+		}
+		// set the viewport
+		var width  = rect.right - rect.left;
+		var height = rect.bottom - rect.top;
+		var left   = rect.left;
+		var top    = rect.top;
 
-		var userData = scene.userData;
-		var camera = userData.camera;
-
-		var left   = Math.floor( rect.width  * userData.left );
-		var top    = Math.floor( rect.height  * userData.top );
-		var width  = Math.floor( rect.width  * userData.width );
-		var height = Math.floor( rect.height * userData.height );
-
-		camera.aspect = width / height;
-		camera.updateProjectionMatrix();
 		renderer.setViewport( left, top, width, height );
 		renderer.setScissor( left, top, width, height );
+		// var camera = scene.userData.camera;
+		// /camera.aspect = width / height; // not changing in this example
+		//camera.updateProjectionMatrix();
+		// scene.userData.orbitControls.update();
+		renderer.render( scene, scene.userData.camera );
 
-		renderer.render( scene, camera  );
+	}
+
+	function sceneResize(scene) {
+
+		var camera = scene.userData.camera;
+		var dom = scene.userData.element;
+		camera.aspect = dom.offsetWidth / dom.offsetHeight;
+		// console.log(dom.offsetWidth / dom.offsetHeight);
+		camera.updateProjectionMatrix();
+
 	}
 
 

@@ -17,6 +17,7 @@
 
 		<script src="js/controls/TransformControls.js"></script>
 		<script src="js/controls/EditorControls.js"></script>
+		<script src="js/controls/OrbitControls.js"></script>
 		<script src="js/libs/jszip.js"></script>
 		<script src="js/libs/three.meshline.js"></script>
 		<script src="js/libs/three.texttexture.js"></script>
@@ -41,6 +42,7 @@
 		
 		<script src="js/Editor.js"></script>
 		<script src="js/FileLoader.js"></script>
+		<script src = 'js/FlowScene.js'></script>
 		<script src="js/History.js"></script>
 		<script src="js/Storage.js"></script>
 		<script src="js/Menubar.js"></script>
@@ -52,6 +54,7 @@
 		<script src="js/Sidebar.Invoice.js"></script>
 		<script src="js/Sidebar.Properties.js"></script>
 		<script src="js/Sidebar.Properties.NodeNotEditable.js"></script>
+		<script src="js/Sidebar.Flows.js"></script>
 		<script src="js/Sidebar.Properties.EdgeNotEditable.js"></script>
 		<script src="js/Sidebar.Properties.NodeEditable.js"></script>
 		<script src="js/Sidebar.Properties.EdgeEditable.js"></script>
@@ -74,7 +77,6 @@
 				return this.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
 			};
 
-		
 
 			var textureloader = new THREE.TextureLoader();
 			textureloader.load( 'image/disc.png', function( texture ) {
@@ -83,7 +85,7 @@
 				var editor = new Editor();
 		
 				var viewport = new Viewport( editor );
-				document.body.appendChild( viewport.container.dom );
+			
 
 				var menubar = new Menubar( editor );
 				document.body.appendChild( menubar.dom );
@@ -138,14 +140,7 @@
 				// signals.objectAdded.add( saveState );
 			} );
 				
-				document.addEventListener( 'keydown', function ( event ) {
 
-					switch ( event.keyCode ) {
-
-
-					}
-
-					}, false );
 
 				function onWindowResize( event ) {
 
@@ -157,40 +152,38 @@
 
 				onWindowResize();
 
-				} );
-
-
-			document.addEventListener( 'keydown', function ( event ) {
-			if (!event.key) return; 
-			switch (  event.key.toLowerCase() ) {
-				case 'delete':
-
-					var object = editor.selected;
-
-					if ( object === null || editor.mode == 'AnimationMode' ) return;
-					
-					var parent = object.parent;
-					if ( parent !== null && object.name == 'node') editor.execute( new DeleteNodeCommand( object ) );
-					if ( parent !== null && object.name == 'link') editor.execute( new DeleteEdgeCommand( object ) );
-					break;
-
 			
-				case 'z':
+				document.addEventListener( 'keydown', function ( event ) {
+				if (!event.key) return; 
+				switch (  event.key.toLowerCase() ) {
+					case 'delete':
 
-					if ( IS_MAC ? event.metaKey : event.ctrlKey ) {
+						var object = editor.selected;
 
-						event.preventDefault(); // Prevent browser specific hotkeys
-						if ( event.shiftKey ) {
-							editor.redo();
-						} else {
-							editor.undo();
+						if ( object === null || editor.mode == 'AnimationMode' ) return;
+						
+						var parent = object.parent;
+						if ( parent !== null && object.name == 'node') editor.execute( new DeleteNodeCommand( object ) );
+						if ( parent !== null && object.name == 'link') editor.execute( new DeleteEdgeCommand( object ) );
+						break;
+
+				
+					case 'z':
+
+						if ( IS_MAC ? event.metaKey : event.ctrlKey ) {
+
+							event.preventDefault(); // Prevent browser specific hotkeys
+							if ( event.shiftKey ) {
+								editor.redo();
+							} else {
+								editor.undo();
+							}
 						}
-					}
-					break;
-			}
+						break;
+				}
 
-			}, false );
-
+				}, false );
+			} );
 		</script>
 
 		<!-- <div class="loginPanel">

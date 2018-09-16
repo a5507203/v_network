@@ -4,7 +4,7 @@ var Editor = function (  ) {
 	this.DEFAULT_CAMERA.name = 'Camera';
 	this.DEFAULT_CAMERA.position.set( 0, 0, 60);
 	this.DEFAULT_CAMERA.lookAt( new THREE.Vector3() );
-	this.mode = 'AnimationMode';
+	this.mode = 'EditMode';
 	this.addNewEdgeMode = 0;
 	this.currGame = '';
 	var Signal = signals.Signal;
@@ -12,9 +12,9 @@ var Editor = function (  ) {
 	this.nodeMoveable = 0;
 	this.trafficFlow = false;
 	this.desireLines = false;
-	
-	
 
+
+	scope = this;
 	this.signals = {
 		overBudget: new Signal(),
 		loadGameName: new Signal(),
@@ -44,6 +44,7 @@ var Editor = function (  ) {
 		addNewEdgeStart: new Signal(),
 		addNewEdgeEnd: new Signal(),
 		objectRemoved: new Signal(),
+		refreshSidebarFlowsProperties: new Signal(),
 		modeChanged: new Signal(),
 		updateEdgesPosition: new Signal(),
 		nodePositionChanging: new Signal(),
@@ -57,59 +58,56 @@ var Editor = function (  ) {
 		budgetChanged:new Signal()
 	};
 
-	this.camera = this.DEFAULT_CAMERA.clone();
+	// this.camera = this.DEFAULT_CAMERA.clone();
 
-	// 	this.camera = new THREE.OrthographicCamera( -60 , 60, 60, -60, 1, 1000 );
-	// this.camera.position.set( 0, 0, 60);
-	this.scene = new THREE.Scene();
-	this.scene.name = 'networkScene';
-	this.storage = new Storage();
-	this.scene.userData = {
-		left: 0,
-		top: 0,
-		width: 1,
-		height: 1
-	};
-	this.scene.userData.camera = this.camera;
+	function createSceneContainer(containerClass){
+
+		var element = document.createElement('div');
+		element.setAttribute('class',containerClass);
+
+		var sceneContainer = document.createElement('div');
+		sceneContainer.setAttribute('class','scene');
+		element.appendChild(sceneContainer);
+
+		document.body.appendChild(element);
+		return element;
+	}
 
 	
+	this.storage = new Storage();
+
+	this.editScene = new THREE.Scene();
+	this.editScene.name = 'editScene';
+	this.editScene.background = new THREE.Color( 0xCACACA );
+	this.editScene.userData.camera = this.DEFAULT_CAMERA.clone();
+	var editSceneContainer = createSceneContainer('editScene').querySelector( ".scene" );
+	this.editScene.userData.element = editSceneContainer;
+	this.editScene.userData.camera.aspect = this.editScene.userData.element.offsetWidth / this.editScene.userData.element.offsetHeight;
+	this.editScene.userData.camera.updateProjectionMatrix();
+
+	this.sceneHelpers = new THREE.Scene();
+	this.sceneHelpers.userData.camera = this.editScene.userData.camera;
+	this.sceneHelpers.userData.element = editSceneContainer;
+
 
 	this.flowScene = new THREE.Scene();
 	this.flowScene.name = 'flowScene';
-	this.flowScene.userData = {
-		left: 0,
-		top: 0,
-		width: 0.3,
-		height: 0.5
-	};
+	this.flowScene.background = new THREE.Color( 0xCACACA);
+	// this.flowScene.add(new THREE.AmbientLight( 0x404040 ));
+	this.flowScene.userData.element = createSceneContainer('flowScene').querySelector( ".scene" );
 	this.flowScene.userData.camera = this.DEFAULT_CAMERA.clone();
 
 
-	this.flowScene.background = new THREE.Color( 0xCACACA);
-	this.flowScene.add(new THREE.AmbientLight( 0x404040 ));
 
-	// this.flowScene.add
 	this.tripScene = new THREE.Scene();
 	this.tripScene.name = 'tripScene';
-	this.tripScene.background = new THREE.Color( 0xBABABA );
-	this.tripScene.add(new THREE.AmbientLight( 0x404040 ));
-	this.tripScene.userData = {
-		left: 0,
-		top: 0.5,
-		width: 0.3,
-		height: 0.5
-	};
+	this.tripScene.background = new THREE.Color( 0xCACACA );
+	// this.tripScene.add(new THREE.AmbientLight( 0x404040 ));
+	this.tripScene.userData.element =  createSceneContainer('tripScene').querySelector( ".scene" );
 	this.tripScene.userData.camera = this.DEFAULT_CAMERA.clone();
 
-	this.scene.background = new THREE.Color( 0xAAAAAA );
-	this.sceneHelpers = new THREE.Scene();
-	this.sceneHelpers.userData = {
-		left: 0,
-		top: 0,
-		width: 1,
-		height: 1
-	};
-	this.sceneHelpers.userData.camera = this.camera;
+	
+	
 
 	this.fileLoader = new FileLoader( this );
 	this.history = new History( this );
@@ -120,22 +118,18 @@ var Editor = function (  ) {
 	this.graph = new Graph();
 	this.nodesContainer = new THREE.Group();
     this.nodesContainer.position.set( 0, 0, 0.04 );
-    this.scene.add( this.nodesContainer );
+    this.editScene.add( this.nodesContainer );
 	this.newEdgesDict = {};
 	this.objects = [];
     this.edgesContainer = new THREE.Group();
     this.edgesContainer.position.set( 0, 0, 0.01 );
-    this.scene.add( this.edgesContainer );
-	
-    this.flowsContainer = new THREE.Group();
-    this.flowsContainer.position.set( 0, 0, 0.02 );
-    this.flowScene.add( this.flowsContainer );
+    this.editScene.add( this.edgesContainer );
 
-    this.tripsContainer = new THREE.Group();
-    this.tripsContainer.position.set( 0, 0, 0.02 );
-    this.tripScene.add( this.tripsContainer );
+    // this.flowsContainer.position.set( 0, 0, 0.02 );
+    // this.flowScene.add( this.flowsContainer );
+
 	this.networkVisualization = new NetworkVisualization( this );
-
+	// this.signals.windowResize.dispatch();
 };
 
 Editor.prototype = {
@@ -343,7 +337,7 @@ Editor.prototype = {
 
 		this.storage.clear();
 		this.history.clear();
-		this.camera.copy( this.DEFAULT_CAMERA );
+		// this.camera.copy( this.DEFAULT_CAMERA );
 		this.newEdgesDict = {};
 		// this.objects = [];
 		this.object = {};
@@ -354,28 +348,37 @@ Editor.prototype = {
 		this.removeObjects(this.edgesContainer);
 
 		this.removeObjects(this.nodesContainer);
-
-		// this.removeObjects(this.flowsContainer);
-		// this.removeObjects(this.tripsContainer);
-
+				console.log('g cleared');
+		this.removeObjects(this.flowScene);
+					console.log('f cleared');
+		this.removeObjects(this.tripScene);
+					console.log('t cleared');
+		
 		clearConfig();
+		
+		while ( this.objects.length > 0 ) {
+			this.objects.pop();
+
+		}
 
 		this.signals.editorCleared.dispatch();
+		this.signals.rendererChanged.dispatch();
 		
-		// while ( .length > 0 ) {
 
-		// 	this.removeObject( objects[ 0 ] );
-
-		// }
 	},
 	removeObjects: function ( parent ) {
 		var objects = parent.children;
+		var i = 0;
+
 		while(objects.length>0){
-		
+	
 			var object = objects[0];
-			parent.remove( objects[0] );
-			this.signals.objectRemoved.dispatch( object );
-			this.signals.rendererChanged.dispatch();
+			//if(object.name != ''){
+				parent.remove( objects[0] );
+				
+			// }else{
+			// 	i+=1;
+			// }
 		}
 
 	},
