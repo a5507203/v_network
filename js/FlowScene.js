@@ -10,6 +10,33 @@ var FlowScene = function (flowScene, editor, viewport) {
     var objects = flowScene.children;
 
 
+
+	var title = new UI.Row().setTop( '10px' );
+	title.dom.style['text-align']='center';
+	var nameText = new UI.Text( 'UE traffic assignment' );
+	title.add(nameText);
+
+
+	var infoContainer = new UI.Panel();
+	infoContainer.setId( 'info' );
+	infoContainer.setPosition( 'absolute' );
+	infoContainer.setRight( '10px' );
+	infoContainer.setBottom( '10px' );
+	infoContainer.setFontSize( '12px' );
+	
+	var tsttText = new UI.Text( '0' ).setMarginLeft( '6px' );
+	infoContainer.add( new UI.Text( 'TSTT: ' ), tsttText, new UI.Break() );
+	container.appendChild(title.dom );
+
+
+	signals.tsttChanged.add(function(value){
+
+		tsttText.setValue(value);
+
+	});
+
+	container.appendChild(infoContainer.dom);
+
 	function getIntersects( point, objects ) {
 
 		mouse.set( ( point.x * 2 ) - 1, - ( point.y * 2 ) + 1 );
@@ -76,7 +103,7 @@ var FlowScene = function (flowScene, editor, viewport) {
                 
                 if(selectedObjs[object.uuid] == undefined){
 
-                    object.material.uniforms.color.value = new THREE.Color(0x00ff00);
+                    object.material.uniforms.color.value = new THREE.Color(0x0000ff);
                     object.material.needsUpdate = true;
                     selectedObjs[object.uuid] = object;
                 }
@@ -108,6 +135,12 @@ var FlowScene = function (flowScene, editor, viewport) {
         }
 
     }
+
+	signals.readFlows.add(function(){
+		deSelect(null);
+		signals.refreshSidebarFlowsProperties.dispatch(selectedObjs);
+	});
+
 
 	function onMouseDown( event ) {
 

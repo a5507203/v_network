@@ -18,7 +18,6 @@ var NetworkVisualization = function ( editor ) {
 
     var scope = this;
     this.signals.readFlows.add(function(flows){
-        console.log(flows);
 
         scope.graph.cleanFlows();
         scope.readFlowsFromRawDataString(flows);
@@ -358,6 +357,7 @@ NetworkVisualization.prototype = {
             i += 1;
         }
         var startIndex = i;
+        var totalTstt = 0;
         //find max flow 
         for ( ; i< lines.length ; i += 1 ) {
             var line = lines[i].split('\t');
@@ -367,7 +367,10 @@ NetworkVisualization.prototype = {
             if( volume > maxVolume ) {
                 maxVolume = volume;
             }
+            totalTstt += volume;
         }
+
+        scope.signals.tsttChanged.dispatch(round2Dec(totalTstt));
     
         for ( i = startIndex ; i< lines.length ; i += 1 ) {
             var line = lines[i].split('\t');
@@ -654,7 +657,10 @@ NetworkVisualization.prototype = {
     },
 
     renderFlows: function (  ) {
-    
+
+        removeObjects(scope.flowScene);
+
+ 
         this.cloneNodes(this.nodesContainer,this.flowScene);
         // editor.flowScene.children[2] = this.nodesContainer.clone();
 
@@ -672,7 +678,8 @@ NetworkVisualization.prototype = {
 
     renderTrips: function (  ) {
 
-
+ 
+        removeObjects(scope.tripScene);
         this.cloneNodes(this.nodesContainer, this.tripScene);
         for ( let [key,node] of Object.entries(this.graph.nodes) ) {
            

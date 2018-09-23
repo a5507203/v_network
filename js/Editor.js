@@ -55,7 +55,8 @@ var Editor = function (  ) {
 		isAdmin: new Signal(),
 		publishGraph: new Signal(),
 		edgeNodeOption:new Signal(),
-		budgetChanged:new Signal()
+		budgetChanged:new Signal(),
+		tsttChanged: new Signal()
 	};
 
 	// this.camera = this.DEFAULT_CAMERA.clone();
@@ -106,7 +107,13 @@ var Editor = function (  ) {
 	this.tripScene.userData.element =  createSceneContainer('tripScene').querySelector( ".scene" );
 	this.tripScene.userData.camera = this.DEFAULT_CAMERA.clone();
 
+	var tripTitle = new UI.Row().setTop( '10px' );
+	tripTitle.dom.style['text-align']='center';
+	var nameText = new UI.Text( 'Desire lines' );
+	tripTitle.add(nameText);
 	
+	this.tripScene.userData.element.appendChild(tripTitle.dom);
+
 	
 
 	this.fileLoader = new FileLoader( this );
@@ -350,9 +357,9 @@ Editor.prototype = {
 		this.removeObjects(this.nodesContainer);
 				console.log('g cleared');
 		this.removeObjects(this.flowScene);
-					console.log('f cleared');
+				console.log('f cleared');
 		this.removeObjects(this.tripScene);
-					console.log('t cleared');
+				console.log('t cleared');
 		
 		clearConfig();
 		
@@ -415,3 +422,19 @@ Editor.prototype = {
 
 };
 
+function removeObjects ( parent ) {
+		var objects = parent.children;
+		var i = 0;
+
+		while(objects.length>0){
+	
+			var object = objects[0];
+			//if(object.name != ''){
+				parent.remove( objects[0] );
+				
+			// }else{
+			// 	i+=1;
+			// }
+		}
+
+}

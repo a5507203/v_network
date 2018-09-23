@@ -81,9 +81,16 @@ Sidebar.Properties.linkEditable = function ( editor, object ) {
     // Power
     var powerRow = new UI.Row();
     var power = new UI.Text(graphElement.power);
-    powerRow.add( new UI.Text( 'Power' ).setWidth('140px') );
+    powerRow.add( new UI.Text( 'Beta' ).setWidth('140px') );
     powerRow.add( power );
     container.add( powerRow );
+
+    // Power
+    var bRow = new UI.Row();
+    var b = new UI.Text(graphElement.b);
+    bRow.add( new UI.Text( 'alpha' ).setWidth('140px') );
+    bRow.add( b );
+    container.add( bRow );
 
 
     // Construction Cost

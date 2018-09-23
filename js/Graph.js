@@ -318,11 +318,11 @@ Graph.prototype = {
 
     },
     toCsv : function( ) {
-        console.log(this.nodes);
+    
         var nodesString = 'Node,X,Y\n';
         var edgesString = 'Init node,Term node,Length (km),B,Power,Toll,Number of lanes,Road type,Speed limit,Capacity,Free flow time\n';
         // var flowsString = '\n\n\n\n\nTail,Head,Volume,Cost\n';
-        var roadTypesString = 'Road type,Capacity,Speed,Min number of lanes,Max number of lanes,Construction cost ($/km),Lane adding cost ($/km),Upgrade cost($/km/ln)\n';
+        var roadTypesString = 'Road ID,Road type,Capacity,Speed,Min number of lanes,Max number of lanes,Construction cost ($/km),Lane adding cost ($/km),Upgrade cost($/km/ln)\n';
 
 
         var sortedNodeIdNamePairs = sortObject(this.nodes, 'name', true);

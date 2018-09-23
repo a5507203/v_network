@@ -11,7 +11,7 @@ var Config = {
     budget: 0,
     totalLeft: 0,
     host:'http://13.237.82.173'
-    // host:'http://localhost:3000'
+    //host:'http://localhost:3000'
 };
 
  function clearConfig(params) {

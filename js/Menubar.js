@@ -41,9 +41,10 @@ var Menubar = function ( editor ) {
 			links:graphContents.edges,
 			trips:graphContents.trips
 		};
+	
         httpPostAsync(submitResultUrl, networkInfo, function(res) {
 			signals.readFlows.dispatch(res.flows);
-			console.log(res.score);
+		
 			alert('TSTT is changed by '+ Math.round10(parseFloat(res.score),-2));
 	
         });
