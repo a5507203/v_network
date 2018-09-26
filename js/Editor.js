@@ -12,6 +12,7 @@ var Editor = function (  ) {
 	this.nodeMoveable = 0;
 	this.trafficFlow = false;
 	this.desireLines = false;
+	this.networkChanged = 0;
 
 
 	scope = this;
@@ -341,7 +342,7 @@ Editor.prototype = {
 
 	},
 	clear : function(){
-
+		this.networkChanged = 0;
 		this.storage.clear();
 		this.history.clear();
 		// this.camera.copy( this.DEFAULT_CAMERA );

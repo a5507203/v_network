@@ -36,7 +36,23 @@ var Node = function (uuid, name) {
 
 Node.prototype = {
 
-    toCsv: function( nodes,nodesIdList){
+
+    getFlowCsv: function( nodes,nodesIdList ){
+
+        // GET FLOW FROM DATA STRUCTURE 
+        var flowsRows = '';
+        for( let endNodeId of nodesIdList){
+            if (this.flows.hasOwnProperty(endNodeId)) {
+                for (var flow of this.flows[endNodeId]){
+                    flowsRows += flow.toCsv(this.name, nodes[endNodeId].name);
+                }
+            }
+        }
+
+        return flowsRows;
+    },
+
+    toCsv: function( nodes,nodesIdList ){
         var nodeRow = this.name +','+this.orginalCoordinate.x+','+this.orginalCoordinate.y+'\n';
 
         var edgesRows = '';
@@ -49,12 +65,6 @@ Node.prototype = {
             
         }
 
-        // GET FLOW FROM DATA STRUCTURE 
-        // var flowsRows = '';
-        // for( let endNodeId of nodesIdList){
-        //     if (this.flows.hasOwnProperty(endNodeId)) 
-        //         flowsRows += this.flows[endNodeId].toCsv(this.name, nodes[endNodeId].name);
-        // }
 
         var tripsRow = this.name;
         for( let endNodeId of nodesIdList ){
@@ -317,6 +327,26 @@ Graph.prototype = {
         delete this.nodes[start].trips[end];
 
     },
+
+    getFlowCsv: function(){
+
+        var flowsString = 'Tail,Head,Volume,Cost\n';
+        //var flowsString = '\n\n\n\n\nTail,Head,Volume,Cost\n';
+
+        var sortedNodeIdNamePairs = sortObject(this.nodes, 'name', true);
+    
+        var nodesIdList = sortedNodeIdNamePairs.map(([uuid,name])=>  uuid);
+
+        for(let startNode of nodesIdList ) {
+            
+            flowsString += this.nodes[startNode].getFlowCsv(this.nodes,nodesIdList);
+ 
+
+
+        }
+        return flowsString;
+
+    },
     toCsv : function( ) {
     
         var nodesString = 'Node,X,Y\n';
@@ -341,9 +371,7 @@ Graph.prototype = {
             // flowsString += contents.flowsRows;
             tripsString += contents.tripsRow;
 
-            // for( let key, edge of Object.entries(node.edges)){
-            //     edge.toCsv(this.nodes)
-            // }
+
         }
         // //
         // console.log(Config.roadTypes)

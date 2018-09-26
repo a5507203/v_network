@@ -37,7 +37,7 @@ History.prototype = {
 
 		var lastCmd = this.undos[ this.undos.length - 1 ];
 		var timeDifference = new Date().getTime() - this.lastCmdTime.getTime();
-
+		this.editor.networkChanged = 1;
 		var isUpdatableCmd = lastCmd &&
 			lastCmd.updatable &&
 			cmd.updatable &&

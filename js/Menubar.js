@@ -30,6 +30,7 @@ var Menubar = function ( editor ) {
 	container.add (logOutButton );
 	
 	function submitGraph() {
+		editor.networkChanged = 0;
 		
     	var graphContents = editor.graph.toCsv();
         userInfo = JSON.parse(getCookie('userInfo'));

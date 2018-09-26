@@ -362,12 +362,13 @@ NetworkVisualization.prototype = {
         for ( ; i< lines.length ; i += 1 ) {
             var line = lines[i].split('\t');
             if (line.length < 7 ) continue;
-            var volume = parseFloat(line[4].replace(' ',''));
+            var volume = round2Dec(line[4].replace(' ',''));
+            var cost = round2Dec(line[5].replace(' ',''));
             
             if( volume > maxVolume ) {
                 maxVolume = volume;
             }
-            totalTstt += volume;
+            totalTstt += volume*cost;
         }
 
         scope.signals.tsttChanged.dispatch(round2Dec(totalTstt));

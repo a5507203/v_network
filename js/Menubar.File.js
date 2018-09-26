@@ -65,10 +65,10 @@ Menubar.File = function ( editor ) {
 	} );
 	options.add( upload );
 
-	//Download
+	//Download Network
 	var download = new UI.Row();
 	download.setClass( 'option' );
-	download.setTextContent( 'Download' );
+	download.setTextContent( 'Download Network' );
 	download.onClick( function () {
 		var zip = new JSZip();
 
@@ -86,6 +86,27 @@ Menubar.File = function ( editor ) {
 		});
 	} );
 	options.add( download );
+
+
+	//Download Network
+	var downloadFlow = new UI.Row();
+	downloadFlow.setClass( 'option' );
+	downloadFlow.setTextContent( 'Download Flow' );
+	downloadFlow.onClick( function () {
+
+		var r = true;
+
+		if(editor.networkChanged == 1){
+			r = confirm('There has some changes of the network have not submitted yet, do you want to download the previous flows anyway?');
+		}
+
+		if (r == true) {
+			var flows = editor.graph.getFlowCsv();
+			saveString(flows,'flows.csv');
+		}
+	
+	} );
+	options.add( downloadFlow );
 
 	//SAVE PROGRESS
 	var save = new UI.Row();
@@ -261,12 +282,23 @@ Menubar.File = function ( editor ) {
 
 };
 
+var link = document.createElement( 'a' );
+link.style.display = 'none';
+document.body.appendChild( link );
+
 function save( blob, filename ) {
 
 	link.href = URL.createObjectURL( blob );
-	link.download = filename || 'data.json';
+	link.download = filename || 'flows.csv';
 	link.click();
 
 	// URL.revokeObjectURL( url ); breaks Firefox...
+
+}
+
+
+function saveString( text, filename ) {
+
+	save( new Blob( [ text ], { type: 'text/plain' } ), filename );
 
 }
