@@ -371,7 +371,7 @@ NetworkVisualization.prototype = {
             totalTstt += volume*cost;
         }
 
-        scope.signals.tsttChanged.dispatch(round2Dec(totalTstt));
+        scope.signals.tsttChanged.dispatch(Math.round10(totalTstt,-4).toExponential());
     
         for ( i = startIndex ; i< lines.length ; i += 1 ) {
             var line = lines[i].split('\t');
