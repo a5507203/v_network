@@ -21,12 +21,14 @@ function httpPostAsync(theUrl, jsonObject, callback) {
     xmlHttp.send(JSON.stringify(jsonObject));
 }
 
-function httpDeleteAsync(theUrl, callback) {
+function httpDeleteAsync(theUrl, jsonObject, callback) {
     var xmlHttp = new XMLHttpRequest();
+    
     xmlHttp.onreadystatechange = function() { 
         if (xmlHttp.readyState == XMLHttpRequest.DONE && xmlHttp.status == 200)
             callback(JSON.parse(xmlHttp.responseText));
     };
     xmlHttp.open("DELETE", theUrl, true);
-    xmlHttp.send(null);
+    xmlHttp.setRequestHeader('Content-Type', 'application/json');
+    xmlHttp.send(JSON.stringify(jsonObject));
 }

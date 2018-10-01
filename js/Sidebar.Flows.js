@@ -28,8 +28,8 @@ Sidebar.Flows = function ( editor ) {
 
             var from = new UI.Text(nodes[flow.from].name).setWidth ( '70px' );
             var to = new UI.Text( nodes[flow.to].name).setWidth ( '70px' );
-            var volume = new UI.Text(round2Dec(flow.graphElement.volume)).setWidth( '70px' );
-            var cost = new UI.Text(round2Dec(flow.graphElement.cost)).setWidth( '70px' );
+            var volume = new UI.Text(Math.round10(flow.graphElement.volume,-4)).setWidth( '70px' );
+            var cost = new UI.Text(Math.round10(flow.graphElement.cost,-4)).setWidth( '70px' );
 
             // var from = nodes[flow.from];
             // var to = nodes[flow.to];

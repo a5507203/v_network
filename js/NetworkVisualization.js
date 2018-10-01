@@ -362,8 +362,8 @@ NetworkVisualization.prototype = {
         for ( ; i< lines.length ; i += 1 ) {
             var line = lines[i].split('\t');
             if (line.length < 7 ) continue;
-            var volume = round2Dec(line[4].replace(' ',''));
-            var cost = round2Dec(line[5].replace(' ',''));
+            var volume = Math.round10(line[4].replace(' ',''),-4);
+            var cost = Math.round10(line[5].replace(' ',''),-4);
             
             if( volume > maxVolume ) {
                 maxVolume = volume;

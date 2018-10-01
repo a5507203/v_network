@@ -30,11 +30,16 @@ Sidebar.Settings = function ( editor ) {
 		var loadGame = function(){
 			editor.currGame = currGame;
 			newGameList.setValue(currGame);
-			for ( var maxScoreRecord of maxScores){
-				if (maxScoreRecord._id.networkID == currGame) {
-					maxScore.setValue(maxScoreRecord.maxscore);
-				}
+			if( maxScores[currGame] != undefined){
+				maxScore.setValue(maxScores[currGame]);
+			}else{
+				maxScore.setValue(0);
 			}
+			// for ( var maxScoreRecord of maxScores){
+			// 	if (maxScoreRecord._id.networkID == currGame) {
+			// 		maxScore.setValue(maxScoreRecord.maxscore);
+			// 	}
+			// }
 			signals.loadDataUrl.dispatch( avaiableNetworksUrl + '/'+ currGame );
 			signals.editorCleared.remove(loadGame);
 
@@ -75,12 +80,14 @@ Sidebar.Settings = function ( editor ) {
 	var deleteButton = new UI.Button('Delete Game');
 	deleteButton.onClick( function () {
 		var networkId = editor.currGame;
+		var userInfo = getUserInfo();
+        userId = userInfo.id;
 		if(networkId == '') return;
 		if ( confirm( 'Do you want to delete this game?' ) ) {
-			httpDeleteAsync(avaiableNetworksUrl + '/'+ networkId,function(res){
+			httpDeleteAsync(avaiableNetworksUrl + '/'+ networkId,{author:userId},function(res){
 				//console.log(res);	
 				//if(res.status == 200) {
-				alert('a game has been deleted');
+				alert(res.message);
 				signals.clear.dispatch();
 				refeshUI();
 				//}
@@ -111,6 +118,7 @@ Sidebar.Settings = function ( editor ) {
 		var newGameOption = {};
 		
 		httpGetAsync(avaiableNetworksUrl, function(res){
+			console.log(res)
 			maxScores = res.maxScores;
 			for( var network of res.networks ) {
 				newGameOption[network._id] = network.networkName;

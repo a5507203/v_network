@@ -44,6 +44,7 @@ var Menubar = function ( editor ) {
 		};
 	
         httpPostAsync(submitResultUrl, networkInfo, function(res) {
+			console.log(res);
 			signals.readFlows.dispatch(res.flows);
 		
 			alert('TSTT is changed by '+ Math.round10(parseFloat(res.score),-2));
