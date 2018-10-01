@@ -30,16 +30,23 @@ Sidebar.Settings = function ( editor ) {
 		var loadGame = function(){
 			editor.currGame = currGame;
 			newGameList.setValue(currGame);
-			if( maxScores[currGame] != undefined){
-				maxScore.setValue(maxScores[currGame]);
-			}else{
+			// console.log(currGame)
+			// console.log(maxScores)
+			// console.log(maxScores[currGame])
+			// if( maxScores[currGame] != undefined){
+			// 	console.log(maxScores[currGame]);
+			// 	maxScore.setValue(maxScores[currGame]);
+			// }else{
 				maxScore.setValue(0);
-			}
-			// for ( var maxScoreRecord of maxScores){
-			// 	if (maxScoreRecord._id.networkID == currGame) {
-			// 		maxScore.setValue(maxScoreRecord.maxscore);
-			// 	}
 			// }
+
+			for ( var maxScoreRecord of maxScores){
+				if (maxScoreRecord._id.networkID == currGame) {
+					maxScore.setValue(maxScoreRecord.maxscore);
+					break;
+				}
+			
+			}
 			signals.loadDataUrl.dispatch( avaiableNetworksUrl + '/'+ currGame );
 			signals.editorCleared.remove(loadGame);
 
