@@ -75,7 +75,8 @@ Menubar.File = function ( editor ) {
 		var graphContents = editor.graph.toCsv();
 		console.log(graphContents);
 		zip.file("nodes.csv", graphContents.nodes);
-		if( getUserInfo().isAdmin ) zip.file("roadTypes.csv", graphContents.roadTypes);
+		//if( getUserInfo().isAdmin )
+		zip.file("roadTypes.csv", graphContents.roadTypes);
 		zip.file("networks.csv", graphContents.edges);
 		zip.file("trips.csv", graphContents.trips);
 		zip.file('gameInfo.csv',editor.currGame);
