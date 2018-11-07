@@ -6,6 +6,8 @@ Authentication = function(editor) {
     var loginStatus = 0;
     var prePassword = '';
     //popup container
+
+
     var popupContainer = document.createElement('div');
     popupContainer.setAttribute('class','loginPanel');
     popupContainer.setAttribute('style','display:inline');
@@ -23,18 +25,28 @@ Authentication = function(editor) {
         setCookie('userInfo','',0);
         body.appendChild(popupContainer);
     });
+
+    
+    var logoContainer = document.createElement('div');
+    logoContainer.setAttribute('class','imgContainer');
+
+    var logo = document.createElement('img');
+    logo.setAttribute('src','./image/logo2.png');
+    logoContainer.appendChild(logo);
+    popupContainer.appendChild(logoContainer);
+
     //popup panel
     var popupPanel = document.createElement('div');
     popupPanel.setAttribute('class','popupContainer');
     popupPanel.setAttribute('style','display:inline');
     popupContainer.appendChild(popupPanel);
     //popup Header
-    var popupHeader = document.createElement('header');
-    popupHeader.setAttribute('class','popupHeader');
-    var headerTXT = document.createElement('label');
-    headerTXT.innerHTML = 'LOGIN';
-    popupHeader.appendChild(headerTXT);
-    popupPanel.appendChild(popupHeader);
+    // var popupHeader = document.createElement('header');
+    // popupHeader.setAttribute('class','popupHeader');
+    // var headerTXT = document.createElement('label');
+    // headerTXT.innerHTML = 'LOGIN';
+    // popupHeader.appendChild(headerTXT);
+    // popupPanel.appendChild(popupHeader);
     //popup body
     var popupBody = document.createElement('div');
     popupBody.setAttribute('class','popupBody');
@@ -160,6 +172,8 @@ Authentication = function(editor) {
     registerPassword.addEventListener('change', validatePassword);
     confirmPassword.addEventListener('keyup', validatePassword);
 
+
+
     // loginPassword.onkeyup = function(){
     //     if(loginStatus == 401 && prePassword == loginPassword.value) {
     //         console.log('set');
@@ -224,6 +238,12 @@ Authentication = function(editor) {
         }
 
     }
+
+
+    var discription = document.createElement('div');
+    discription.setAttribute('class','discription');
+    discription.innerHTML = 'NEXUSketch is a network analysis platform, designed to analyse and visualise traffic flow in road network. This platform can be used to compare and evaluate various network configurations. In NEXUSketch you can edit a road network by adding or removing links, altering road type and changing the number of lanes to achieve a higher performance. NEXUSketch uses the static traffic assignment method to estimate traffic flow and travel time in the network. <br /> <br /> For any feedback please contact Milad Ghasri at <a href="m.ghasri@unsw.edu.au">m.ghasri@unsw.edu.au</a>';
+    popupPanel.appendChild(discription);
 
 };
 function setCookie(c_name,value,expiredays){

@@ -1,7 +1,7 @@
 
 
 /* Transparent Overlay */
-.loginPanel:before {
+/* .loginPanel:before {
     content: '';
     display: block;
     position: fixed;
@@ -10,9 +10,22 @@
     width: 100%;
     height: 100%;
     background-color: rgba(0,0,0,0.3);
+  } */
+
+  .loginPanel{
+
+    background-color:#fff;
+    position:fixed;
+    width:100%;
+    height:100%;
+    top:0px;
+    left:0px;
+    z-index:1000;
+    
+  
   }
 
-.loginPanel {
+/* .loginPanel {
     position: absolute;
     text-align: center;
     font-family: sans-serif,monospace;
@@ -20,19 +33,34 @@
     top: 20%;
     z-index: 9999;
  
-}
+} */
 
 
 .popupContainer {
+
     position: absolute;
-    width: 40%;
+    width: 70%;
     height: auto;
-    left: 20%;
-    top: 20%;
-    background: #FFF;
+    left: 15%;
+    top: 25%;
+    text-align: center
+
 }
 
+.imgContainer {
+    position: absolute;
+    top:5%;
+    width: 100%;
+    height: 10%;
+}
 
+img{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 40%;
+
+ }
 
 .one_half {
     /* width: 40%; */
@@ -44,7 +72,7 @@
     position: relative;
     margin-left: 2vw;
     margin-right: 2vw;
-    font-size: 2vw;
+    font-size: 1.5vw;
     
 }
 
@@ -53,20 +81,31 @@
 }
 /* Popup Styles*/
 
-.popupHeader {
-    font-size: 2vw;
-    text-transform: uppercase;
-    background-color: #000;
+.discription {
+
+
     position: relative;
     padding: 10px 20px;
-    border-bottom: 1px solid #DDD;
+    border-top: 1px solid #DDD;
     font-weight: bold;
-    color: white;
+    color: #111;
+    margin-top: 30px;
 }
 
 
 .popupBody {
+    display: inline-block;
     padding: 20px;
+    width:30%;
+    /* left: 35%; */
+    border-radius: 3px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #ccc;
+    background: #FFF;
+    -webkit-box-shadow: 3px 3px #ccc;   
+    -moz-box-shadow: 3px 3px #ccc;   
+    box-shadow: 3px 3px #ccc;   
 }
 
 
@@ -74,7 +113,7 @@
 
     position: absolute;
     /* top: 200px; */
-    width: 100%;
+    width: 35%;
 
 }
 
@@ -101,6 +140,7 @@
         background-color: white
 }
 .popupBody select{
+
     width: 90%;
     padding: 1vw;
     border: 0.25vw solid #DDD;
@@ -129,5 +169,14 @@
     display: inline;
 }
 
+
+/* .discription {
+       display: inline-block;
+    width: 40%;
+    margin-top: 30px;
+
+
+
+} */
 
 
