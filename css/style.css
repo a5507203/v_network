@@ -25,6 +25,7 @@ body {
 	align-items: center;
 	justify-content: center;
 }
+
 #uiContainer {
     position: absolute;
     top: 0px;

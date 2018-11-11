@@ -5,14 +5,14 @@ Authentication = function(editor) {
     var body = document.body;
     var loginStatus = 0;
     var prePassword = '';
-    //popup container
 
 
-    var popupContainer = document.createElement('div');
-    popupContainer.setAttribute('class','loginPanel');
-    popupContainer.setAttribute('style','display:inline');
+    //landing page container
+    var landingPage = document.createElement('div');
+    landingPage.setAttribute('class','landingPage');
+    landingPage.setAttribute('style','display:inline');
     if(!checkCookie())
-        body.appendChild(popupContainer);
+        body.appendChild(landingPage);
     else{
         console.log('login');
         signals.userLogin.dispatch(true);
@@ -23,39 +23,45 @@ Authentication = function(editor) {
             return;
         }
         setCookie('userInfo','',0);
-        body.appendChild(popupContainer);
+        body.appendChild(landingPage);
     });
 
-    
+    // add logo to the landing page
     var logoContainer = document.createElement('div');
     logoContainer.setAttribute('class','imgContainer');
 
     var logo = document.createElement('img');
     logo.setAttribute('src','./image/logo2.png');
     logoContainer.appendChild(logo);
-    popupContainer.appendChild(logoContainer);
+    landingPage.appendChild(logoContainer);
 
-    //popup panel
-    var popupPanel = document.createElement('div');
-    popupPanel.setAttribute('class','popupContainer');
-    popupPanel.setAttribute('style','display:inline');
-    popupContainer.appendChild(popupPanel);
-    //popup Header
-    // var popupHeader = document.createElement('header');
-    // popupHeader.setAttribute('class','popupHeader');
-    // var headerTXT = document.createElement('label');
-    // headerTXT.innerHTML = 'LOGIN';
-    // popupHeader.appendChild(headerTXT);
-    // popupPanel.appendChild(popupHeader);
-    //popup body
-    var popupBody = document.createElement('div');
-    popupBody.setAttribute('class','popupBody');
-    popupPanel.appendChild(popupBody);
+    // add discription
+    var discription = document.createElement('div');
+    discription.setAttribute('class','discription');
+    discription.innerHTML = 'NEXUSketch is a network analysis platform, designed to analyse and visualise traffic flow in road network. This platform can be used to compare and evaluate various network configurations. In NEXUSketch you can edit a road network by adding or removing links, altering road type and changing the number of lanes to achieve a higher performance. NEXUSketch uses the static traffic assignment method to estimate traffic flow and travel time in the network.';
+    landingPage.appendChild(discription);
+
+    // add auth panel
+    var authPanel = document.createElement('div');
+    authPanel.setAttribute('class','authPanel');
+    // authPanel.setAttribute('style','display:inline');
+    landingPage.appendChild(authPanel);
+    
+    // add auth header
+    var authHeader =  document.createElement('div');
+    authHeader.setAttribute('class','authHeader');
+    authHeader.innerHTML = "To start using NEXUSketch please login or register";
+    authPanel.appendChild(authHeader);
+
+    // add auth body
+    var authBody = document.createElement('div');
+    authBody.setAttribute('class','authBody');
+    authPanel.appendChild(authBody);
 
     //login panel
     var loginPanel = document.createElement('div');
     loginPanel.setAttribute('class','user_login');
-    popupBody.appendChild(loginPanel);
+    authBody.appendChild(loginPanel);
     var loginForm = document.createElement('form');
     loginPanel.appendChild(loginForm);
   
@@ -148,16 +154,16 @@ Authentication = function(editor) {
 
     registerButton.onclick = function(){
         //setDisplay(loginPanel,'none');
-        popupBody.removeChild(loginPanel);
-        popupBody.appendChild(registerPanel);
+        authBody.removeChild(loginPanel);
+        authBody.appendChild(registerPanel);
         //setDisplay(registerPanel,'inline');
     };
 
 
   
     backButton.onclick = function(){
-        popupBody.appendChild(loginPanel);
-        popupBody.removeChild(registerPanel);
+        authBody.appendChild(loginPanel);
+        authBody.removeChild(registerPanel);
     };
 
 
@@ -195,7 +201,7 @@ Authentication = function(editor) {
                 setCookie('userInfo',JSON.stringify({id:res.data.user.id,isAdmin:res.data.user.isAdmin,username:res.data.user.username}),365);
                 checkCookie();
                 signals.userLogin.dispatch(true);
-                document.body.removeChild(popupContainer);
+                document.body.removeChild(landingPage);
             }
         });
  
@@ -209,7 +215,7 @@ Authentication = function(editor) {
             setCookie('userInfo',JSON.stringify({id:res.data.user.id,isAdmin:res.data.user.isAdmin,username:res.data.user.username}),365);
             signals.userLogin.dispatch(true);
             signals.isAdmin.dispatch(false);
-            document.body.removeChild(popupContainer);
+            document.body.removeChild(landingPage);
             
         });
         
@@ -239,11 +245,26 @@ Authentication = function(editor) {
 
     }
 
+    var footer = document.createElement('div');
+    footer.setAttribute('class','footer');
+    landingPage.appendChild(footer);
 
-    var discription = document.createElement('div');
-    discription.setAttribute('class','discription');
-    discription.innerHTML = 'NEXUSketch is a network analysis platform, designed to analyse and visualise traffic flow in road network. This platform can be used to compare and evaluate various network configurations. In NEXUSketch you can edit a road network by adding or removing links, altering road type and changing the number of lanes to achieve a higher performance. NEXUSketch uses the static traffic assignment method to estimate traffic flow and travel time in the network. <br /> <br /> For any feedback please contact Milad Ghasri at <a href="m.ghasri@unsw.edu.au">m.ghasri@unsw.edu.au</a>';
-    popupPanel.appendChild(discription);
+    
+    var contact = document.createElement('div');
+    contact.setAttribute('class','contact');
+    contact.innerHTML = 'For any feedback please contact Milad Ghasri <br/> at m.ghasri@unsw.edu.au';
+    footer.appendChild(contact);
+
+
+    // add logo to the landing page
+   
+
+    var unswLogo = document.createElement('img');
+       unswLogo.setAttribute('class','unswLogo');
+    unswLogo.setAttribute('src','./image/unsw.png');
+
+    footer.appendChild(unswLogo);
+
 
 };
 function setCookie(c_name,value,expiredays){
